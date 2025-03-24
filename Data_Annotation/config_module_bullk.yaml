@@ -1,0 +1,56 @@
+
+# model Contents
+Model_path: 'Models/best11_v3.pt'
+
+# Path Constants
+input_video: 'Raw_Data\new\chunk_22-01-25_18-55.avi'
+output_folder: 'output_videos/' 
+
+# Keypoints
+keypoint_list: [4, 5, 6, 7, 8, 9]   # Left Shoulder, Left Elbow, Left Hand, Right Shoulder, Right Elbow, Right Hand
+
+# Base Angle
+base_angle_threeshold_min: 20
+base_angle_threeshold_max: 65
+
+# Hand Sequence Threshold Limits
+hand_sequence_threshold:
+  hand_sequence_threshold_min: 60
+  hand_sequence_threshold_max: 300 # Threshold for y-direction movement
+
+# Elbow Sequence Threshold Limits
+elbow_sequence_threshold:
+  elbow_sequence_threshold_min: -150
+  elbow_sequence_threshold_max: 250 # Threshold for x-direction movement
+
+# Hand near ear threshold
+hand_near_ear: 75
+
+# Define Buffer size
+HAND_BUFFER_SEQUENCE: 5               # Hand keypoints are stored in this buffer
+HAND_BUFFER_VALUE: 3                  # Difference of Hand keypoints are stored in this buffer
+ELBOW_BUFFER_SEQUENCE: 5              # Elbow keypoints are stored in this buffer
+ELBOW_BUFFER_VALUE: 3                 # Difference of elbow keypoints are stored in this buffer
+CONDITION_BUFFER: 3
+
+# For Debugging
+debug: True
+# output_folder: './test_videos'
+
+# Camera ID for ROI values.
+camera_id: 1
+camera_url: './test_videos/cam_1/chunk_02-03-25_15-35-desk1-2-3.avi'
+
+# # CSV Files
+# csv_file_path: './csv_files/output.csv'
+
+# Input Base Fodler
+base_dir: './test_videos/'
+
+# Ouput
+output_base_dir: './outputs_2'
+
+
+
+
+
