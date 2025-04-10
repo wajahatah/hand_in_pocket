@@ -8,3 +8,5 @@
 *.pyo
 *.avi
 *.mp4
+*.txt
+*.joblib
