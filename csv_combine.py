@@ -3,10 +3,10 @@ import os
 import glob
 
 # Path to your folder with the 17 CSV files
-input_folder = "C:/wajahat/hand_in_pocket/dataset/split_distance"
-output_dir = "C:/wajahat/hand_in_pocket/dataset/split_distance/combined"
+input_folder = "C:/wajahat/hand_in_pocket/dataset/training"
+output_dir = "C:/wajahat/hand_in_pocket/dataset/training/combined"
 os.makedirs(output_dir, exist_ok=True)  # Create output directory if it doesn't exist
-output_file = 'combined_1.csv'
+output_file = 'combined_2.csv'
 output_file = os.path.join(output_dir, output_file)
 
 # Load and combine all CSVs
@@ -22,6 +22,9 @@ for file in all_files:
     columns_to_drop += [col for col in df.columns if '_conf' in col]
 
     df.drop(columns=columns_to_drop, inplace=True)
+
+    # df['source_file'] = os.path.basename(file)
+    df.insert(0, 'source_file', os.path.basename(file))  # Add source file name as the first column
 
     df_list.append(df)
 
