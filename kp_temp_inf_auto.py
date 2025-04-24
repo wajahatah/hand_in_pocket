@@ -24,7 +24,7 @@ def assign_roi_index(x):
 # Load models
 if __name__ == "__main__":
     kp_model = YOLO("C:/wajahat/hand_in_pocket/bestv7-2.pt")
-    rf_model = joblib.load("rf_models/rf_temp_l1.joblib")  # your temporal model
+    rf_model = joblib.load("rf_models/rf_temp_norm_l3.joblib")  # your temporal model
 
     # video_path = "C:/wajahat/hand_in_pocket/test_bench/tp_t2.mp4"
     input_dir = "C:/wajahat/hand_in_pocket/test_bench"
@@ -47,14 +47,15 @@ if __name__ == "__main__":
         # Connections and feature names
         connections = [(0, 1), (0, 2), (0, 3), (1, 4), (1, 7), (4, 5), (5, 6), (7, 8), (8, 9)]
 
-        single_frame_features = [ #"position" ]  + [
+        single_frame_features = [ "position" ]  + [
             f"kp_{i}_x" for i in range(10)
         ] + [
             f"kp_{i}_y" for i in range(10)
-        ] + [
-            "distance(0,1)", "distance(0,2)", "distance(0,3)", "distance(1,4)", "distance(1,7)",
-            "distance(4,5)", "distance(5,6)", "distance(7,8)", "distance(8,9)", "position"
-        ]
+        ] 
+        # + [
+        #     "distance(0,1)", "distance(0,2)", "distance(0,3)", "distance(1,4)", "distance(1,7)",
+        #     "distance(4,5)", "distance(5,6)", "distance(7,8)", "distance(8,9)", "position"
+        # ]
 
         # Define temporal window size
         WINDOW_SIZE = 5
@@ -114,22 +115,39 @@ if __name__ == "__main__":
 
                     for i, keypoint in enumerate(kp_tensor):
                         x, y, conf = keypoint[:3].cpu().numpy()
-                        if conf < 0.5:
-                            x, y = 0, 0
-                        keypoints.append((x, y))
-                        feature_dict[f"kp_{i}_x"] = x
-                        feature_dict[f"kp_{i}_y"] = y
                         cv2.circle(frame, (int(x), int(y)), 5, (0, 255, 0), -1)
+                        if conf < 0.5:
+                            # x, y = 0, 0  # when not using normalization
+                        #uncoment following line when using normalization approach
+                        # Start of normalization approach
+                            x, y = -1, -1 
+                        else:
+                            x = x / 1280
+                            y = y / 720
+                        # End of normalization approach
+
+                        keypoints.append((x, y,conf)) 
+                        feature_dict[f"kp_{i}_x"] = x 
+                        feature_dict[f"kp_{i}_y"] = y 
+                        
 
                     # distances = calculate_distances(keypoints, connections)
                     # feature_dict.update(distances)
                     # A = (int(feature_dict['kp_0_x']), int(feature_dict['kp_0_y']))
                     # print(feature_dict)
 
-                    if len(keypoints) == 0 or all((x == 0 and y == 0) for x, y in keypoints):
+                    #uncomment following line when not using normalization approach
+                    # if len(keypoints) == 0 or all((x == 0 and y == 0) for x, y,_ in keypoints):
+                    # person_x = keypoints[0][0] 
+                    
+                    # for normalization approach
+                    #start of normalization approach
+                    if len(keypoints) == 0 or all((x == -1 and y == -1) for x, y,_ in keypoints):
                         continue
-
-                    person_x = keypoints[0][0]
+                    
+                    # if conf > 0.5:
+                    person_x = keypoints[0][0] * 1280  # Convert back to pixel coordinates
+                #end of normalization approach
                     position = assign_roi_index(person_x)
                     roi_data = roi_lookup.get(position, None)
                     if roi_data is None:
