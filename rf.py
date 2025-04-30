@@ -3,6 +3,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 import joblib
+from sklearn.model_selection import GridSearchCV
 
 # Load the cleaned dataset
 # df = pd.read_csv('C:/wajahat/hand_in_pocket/dataset/training/combined/temp_l3.csv', dtype=str)
@@ -42,7 +43,7 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 
 # Initialize and train the Random Forest model
-model = RandomForestClassifier(n_estimators=100, random_state=42)
+# model = RandomForestClassifier(n_estimators=100, random_state=42)
 # model = RandomForestClassifier(
 #     n_estimators=100,       # Number of trees
 #     max_depth=10,           # Limit the depth of the tree
@@ -50,12 +51,35 @@ model = RandomForestClassifier(n_estimators=100, random_state=42)
 #     min_samples_leaf=2,     # Minimum samples required at a leaf node
 #     random_state=42
 # )
-rf_model = model.fit(X_train, y_train)
+# rf_model = model.fit(X_train, y_train)
+
+# grid search logic 
+rf_grid = RandomForestClassifier()
+gr_search= {
+    'max_depth': ['None',5, 7, 10, 13],
+    'n_estimators': [75, 100, 150, 200],
+    'min_samples_split': [2, 5, 10],
+    'min_samples_leaf': [1, 2, 4],
+    'max_features': ['sqrt', 'log2'],
+    'criterion': ['gini', 'entropy','log_loss'],
+    'random_state': [42]
+}
+
+grid = GridSearchCV(rf_grid, gr_search, cv=5, n_jobs=-1, scoring = 'accuracy', verbose=2)
+
+rf_model = grid.fit(X_train, y_train)
+print("Best parameters found: ", rf_model.best_params_)
+print("Best score found: ", rf_model.best_score_)
+
+y_pred = rf_model.predict(X_test)
+# end of grid search logic
 
 # Predict on test set
-y_pred = model.predict(X_test)
+# y_pred = model.predict(X_test)
 
-joblib.dump(rf_model, "rf_models/rf_temp_norm_l1.joblib")
+model_name = "rf_grid_temp_norm_l1_v2.joblib"
+
+joblib.dump(rf_model.best_estimator_, f"rf_models/{model_name}")
 
 # Evaluate
 print("✅ Accuracy:", accuracy_score(y_test, y_pred))
@@ -63,14 +87,18 @@ print("\n📊 Classification Report:\n", classification_report(y_test, y_pred))
 print("\n🧩 Confusion Matrix:\n", confusion_matrix(y_test, y_pred))
 
 
-importances = model.feature_importances_
+importances = rf_model.feature_importances_
 # feature_names = X.columns
 
 # Create a DataFrame for easy viewing/sorting
-kp_l1 = pd.DataFrame({
+feature_importance_df = pd.DataFrame({
     # 'feature': feature_names,
     'feature': X.columns,
     'importance': importances
 }).sort_values(by='importance', ascending=False)
 
-print("\n📊 Features of kp_l1 by Importance:\n", kp_l1.head(15))
+print("\n📊 Features of kp_grid_l1 by Importance:\n", feature_importance_df.head(15))
+
+txt_filename = model_name.replace(".joblib", "_feature_importances.txt")
+feature_importance_df.to_csv(txt_filename, index=False, sep='\t')
+print(f"Feature importances saved to {txt_filename}")
