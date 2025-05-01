@@ -87,7 +87,7 @@ print("\n📊 Classification Report:\n", classification_report(y_test, y_pred))
 print("\n🧩 Confusion Matrix:\n", confusion_matrix(y_test, y_pred))
 
 
-importances = rf_model.feature_importances_
+importances = rf_model.best_estimator_.feature_importances_
 # feature_names = X.columns
 
 # Create a DataFrame for easy viewing/sorting
