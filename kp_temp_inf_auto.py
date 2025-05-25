@@ -24,11 +24,13 @@ def assign_roi_index(x):
 # Load models
 if __name__ == "__main__":
     kp_model = YOLO("C:/wajahat/hand_in_pocket/bestv7-2.pt")
-    rf_model = joblib.load("rf_models/rf_temp_norm_l3.joblib")  # your temporal model
+    rf_model = joblib.load("rf_models/rf_grid_temp_norm_l1_v2.joblib")  # your temporal model
 
     # video_path = "C:/wajahat/hand_in_pocket/test_bench/tp_t2.mp4"
-    input_dir = "C:/wajahat/hand_in_pocket/test_bench"
+    # input_dir = "C:/wajahat/hand_in_pocket/test_bench"
+    input_dir = "C:/Users/LAMBDA THETA/Videos"
     json_path = "qiyas_multicam.camera_final.json"
+    # json_path = "qiyas_multicam_2.camera.json"
 
     video_files = [ f for f in os.listdir(input_dir) if f.endswith('.mp4') ]
     if not video_files:
@@ -59,7 +61,8 @@ if __name__ == "__main__":
 
         # Define temporal window size
         WINDOW_SIZE = 5
-        sliding_window = deque(maxlen=WINDOW_SIZE)
+        # sliding_window = deque(maxlen=WINDOW_SIZE)
+        sliding_window = {}
 
                 
         # while cap.isOpened():
@@ -138,6 +141,7 @@ if __name__ == "__main__":
 
                     #uncomment following line when not using normalization approach
                     # if len(keypoints) == 0 or all((x == 0 and y == 0) for x, y,_ in keypoints):
+                    #     continue
                     # person_x = keypoints[0][0] 
                     
                     # for normalization approach
@@ -148,6 +152,7 @@ if __name__ == "__main__":
                     # if conf > 0.5:
                     person_x = keypoints[0][0] * 1280  # Convert back to pixel coordinates
                 #end of normalization approach
+                    # person_x = keypoints[0][0]  # for without normalization
                     position = assign_roi_index(person_x)
                     roi_data = roi_lookup.get(position, None)
                     if roi_data is None:
@@ -169,16 +174,26 @@ if __name__ == "__main__":
                     feature_dict['position'] = position
 
                     ordered_frame_features = {key: feature_dict.get(key, 0.0) for key in single_frame_features}
-                    sliding_window.append(ordered_frame_features)
+                    # sliding_window.append(ordered_frame_features)
+
+                    if position not in sliding_window:
+                        sliding_window[position] = deque(maxlen=WINDOW_SIZE)
+
+                    sliding_window[position].append(ordered_frame_features)
 
                     # Predict only if window is full
-                    if len(sliding_window) == WINDOW_SIZE:
+                    if len(sliding_window[position]) == WINDOW_SIZE:
                         flat_feature = {}
-                        for idx, frame_feats in enumerate(sliding_window):
+                        # for idx, frame_feats in enumerate(sliding_window):
+                        for t, frame_feats in enumerate(sliding_window[position]):
                             for key, value in frame_feats.items():
-                                flat_feature[f"{key}_t{idx}"] = value
+                                flat_feature[f"{key}_t{t}"] = value
+
                         input_df = pd.DataFrame([flat_feature])
                         # print(input_df)
+
+                        # input_df.to_csv("input_df_o.csv", index=True, sep='\n')
+
                         prediction = rf_model.predict(input_df)[0]
 
                         # label = "Hand in Pocket" if prediction == 1 else "No Hand in Pocket"

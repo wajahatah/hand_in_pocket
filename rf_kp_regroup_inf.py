@@ -19,9 +19,10 @@ def assign_roi_index(x):
 
 if __name__ == "__main__":
     kp_model = YOLO("C:/wajahat/hand_in_pocket/bestv7-2.pt")
-    rf_model = joblib.load("rf_models/rf_temp_normsorted_l1.joblib")  # your temporal model
+    rf_model = joblib.load("rf_models/rf_temp_regrouped_balance-6.joblib")  # your temporal model
 
-    input_dir = "C:/wajahat/hand_in_pocket/test_bench"
+    # input_dir = "C:/wajahat/hand_in_pocket/test_bench"
+    input_dir = "C:/Users/LAMBDA THETA/Videos"
     json_path = "qiyas_multicam.camera_final.json"
 
     video_files = [f for f in os.listdir(input_dir) if f.endswith('.mp4')]
@@ -39,7 +40,8 @@ if __name__ == "__main__":
 
         # Connections and feature names
         WINDOW_SIZE = 5
-        sliding_window = deque(maxlen=WINDOW_SIZE)
+        # sliding_window = deque(maxlen=WINDOW_SIZE)
+        sliding_window = {}
 
         # New feature ordering per frame
         per_frame_features = [
@@ -92,6 +94,9 @@ if __name__ == "__main__":
             results = kp_model(frame)
 
             for result in results:
+                if not hasattr(result, 'keypoints') or result.keypoints is None:
+                    continue
+
                 keypoints_tensor = result.keypoints.data
                 for person_idx, kp_tensor in enumerate(keypoints_tensor):
                     keypoints = []
@@ -124,25 +129,37 @@ if __name__ == "__main__":
                                 (int(person_x), 100 + person_idx * 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (130, 180, 0), 2)
 
                     feature_dict['position'] = position
+                    # print(feature_dict)
 
                     ordered_frame_features = {key: feature_dict.get(key, 0.0) for key in per_frame_features}
-                    sliding_window.append(ordered_frame_features)
+                    # sliding_window.append(ordered_frame_features)
 
-                    if len(sliding_window) == WINDOW_SIZE:
+                    if position not in sliding_window:
+                        sliding_window[position] = deque(maxlen=WINDOW_SIZE)
+
+                    sliding_window[position].append(ordered_frame_features)
+
+                    # if len(sliding_window) == WINDOW_SIZE:
+                    if len(sliding_window[position]) == WINDOW_SIZE:
                         flat_feature = {}
 
                         # Build features in the new order
                         for i in range(10):  # kp_0 to kp_9
                             for axis in ['x', 'y']:  # x and y
                                 for t in range(WINDOW_SIZE):  # t0 to t4
-                                    flat_feature[f"kp_{i}_{axis}_t{t}"] = sliding_window[t][f"kp_{i}_{axis}"]
+                                    flat_feature[f"kp_{i}_{axis}_t{t}"] = sliding_window[position][t][f"kp_{i}_{axis}"]
 
                         for t in range(WINDOW_SIZE):
-                            flat_feature[f"position_t{t}"] = sliding_window[t]["position"]
+                            # flat_feature[f"position_t{t}"] = sliding_window[t]["position"]
+                            flat_feature[f"position_t{t}"] = sliding_window[position][t]["position"]
 
                         # flat_feature["hand_in_pocket"] = 0  # Dummy, needed for model input
 
                         input_df = pd.DataFrame([flat_feature])
+                        # print(input_df)
+
+                        # txt_filename = model_name.replace(".joblib", "_feature_importances.txt")
+                        # input_df.to_csv("input_df.txt", index=False, sep='\t')
 
                         prediction = rf_model.predict(input_df)[0]
 
@@ -154,7 +171,7 @@ if __name__ == "__main__":
                                         cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
 
             cv2.imshow("Temporal Inference", frame)
-            if cv2.waitKey(1) & 0xFF == ord('q'):
+            if cv2.waitKey(0) & 0xFF == ord('q'):
                 break
 
         cap.release()
