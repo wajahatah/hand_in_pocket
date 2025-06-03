@@ -7,17 +7,18 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 
 # -------- Configuration --------
-INPUT_SIZE = 105
-HIDDEN_SIZE = 64
+INPUT_SIZE = 104
+HIDDEN_SIZE = 128
 BATCH_SIZE = 32
 EPOCHS = 300
-PATIENCE = 5
+PATIENCE = 10
 # MODEL_PATH = "mlp_hand_in_pocket.pt"
-model_name = "mlp_temp_norm_regrouped_l1_v2"
-label_column = 'hand_in_pocket'  # Adjust if label column is different
+model_name = "mlp_temp_norm_pos_gen-c3"
+label_column = 'hand_in_pocket'  
 
 # -------- Load Dataset --------
-df = pd.read_csv('C:/wajahat/hand_in_pocket/dataset/split_keypoint/combined/temp_keypoint_l1_v2_norm_sorted.csv')  # Replace with your actual path
+csv_name = 'temp_kp_l1_v2_norm_pos_gen.csv' 
+df = pd.read_csv(f'C:/wajahat/hand_in_pocket/dataset/split_keypoint/combined/{csv_name}')  # Replace with your actual path
 
 df = df.drop(columns=['source_file']) 
 
@@ -44,13 +45,19 @@ class MLP(nn.Module):
     def __init__(self, input_size, hidden_size):
         super(MLP, self).__init__()
         self.net = nn.Sequential(
-            nn.Linear(input_size, hidden_size),
+            nn.Linear(104, 128),
+            nn.ReLU(),
+            nn.Linear(128, 64),
+            # nn.Linear(104, 64),
             nn.ReLU(),
             nn.Dropout(0.3),
-            nn.Linear(hidden_size, hidden_size // 2),
+            nn.Linear(64, 32),
             nn.ReLU(),
             nn.Dropout(0.3),
-            nn.Linear(hidden_size // 2, 1),
+            nn.Linear(32, 16),
+            nn.ReLU(),
+            # nn.Dropout(0.3),
+            nn.Linear(16, 1),
             nn.Sigmoid()
         )
 
@@ -63,7 +70,7 @@ model = MLP(INPUT_SIZE, HIDDEN_SIZE)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = model.to(device)
 criterion = nn.BCELoss()
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+optimizer = optim.AdamW(model.parameters(), lr=0.001)
 
 # -------- Early Stopping --------
 best_loss = float('inf')
