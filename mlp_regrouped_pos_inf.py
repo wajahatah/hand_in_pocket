@@ -12,16 +12,30 @@ from ultralytics import YOLO
 class MLP(nn.Module):
     def __init__(self, input_size=105, hidden_size=64):
         super(MLP, self).__init__()
-        self.net = nn.Sequential(
-            nn.Linear(104, hidden_size),
-            nn.ReLU(),
-            nn.Dropout(0.3),
-            nn.Linear(hidden_size, hidden_size // 2),
-            nn.ReLU(),
-            nn.Dropout(0.3),
-            nn.Linear(hidden_size // 2, 1),
-            nn.Sigmoid()
-        )
+        # self.net = nn.Sequential(
+        #     nn.Linear(104, hidden_size),
+        #     nn.ReLU(),
+        #     nn.Dropout(0.3),
+        #     nn.Linear(hidden_size, hidden_size // 2),
+        #     nn.ReLU(),
+        #     nn.Dropout(0.3),
+        #     nn.Linear(hidden_size // 2, 1),
+        #     nn.Sigmoid()
+        # )
+
+        # # for c1 model architecture
+        # self.net = nn.Sequential(
+        #     nn.Linear(104, 64),
+        #     nn.ReLU(),
+        #     nn.Linear(64, 32),
+        #     nn.ReLU(),
+        #     nn.Dropout(0.3),
+        #     nn.Linear(32, 16),
+        #     nn.ReLU(),
+        #     nn.Dropout(0.3),
+        #     nn.Linear(16, 1),
+        #     nn.Sigmoid()
+        # )
 
         # for c2 model architecture
         # self.net = nn.Sequential(
@@ -36,6 +50,22 @@ class MLP(nn.Module):
         #     nn.Linear(32, 1),
         #     nn.Sigmoid()
         # )
+
+        # for c3 model architecture
+        self.net = nn.Sequential(
+            nn.Linear(104, 128),
+            nn.ReLU(),
+            nn.Linear(128, 64),
+            nn.ReLU(),
+            nn.Dropout(0.3),
+            nn.Linear(64, 32),
+            nn.ReLU(),
+            nn.Dropout(0.3),
+            nn.Linear(32, 16),
+            nn.ReLU(),
+            nn.Linear(16, 1),
+            nn.Sigmoid()
+        )
 
     def forward(self, x):
         return self.net(x)
@@ -59,7 +89,7 @@ def load_mlp_model(weights_path, device):
 if __name__ == "__main__":
     kp_model = YOLO("C:/wajahat/hand_in_pocket/bestv7-2.pt")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    mlp_model = load_mlp_model("rf_models/mlp_temp_norm_regrouped_pos_gen.pt", device)
+    mlp_model = load_mlp_model("rf_models/mlp_temp_norm_regrouped_pos_gen-c3.pt", device)
 
     # input_dir = "C:/Users/LAMBDA THETA/Videos"
     input_dir = "C:/wajahat/hand_in_pocket/test_bench"
