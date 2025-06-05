@@ -1,7 +1,7 @@
 import pandas as pd
 import os
 
-input_csv = "temp_keypoint_l3"
+input_csv = "temp_keypoint_l1_v2"
 
 df = pd.read_csv(f"C:/wajahat/hand_in_pocket/dataset/split_keypoint/combined/{input_csv}.csv")
 

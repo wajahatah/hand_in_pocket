@@ -41,7 +41,7 @@ def assign_roi_index(x):
 
 if __name__ == "__main__":
     model = YOLO("C:/wajahat/hand_in_pocket/bestv7-2.pt")
-    input_dir = "F:/Wajahat/hand_in_pocket/Hands_in_pocket_fp"
+    input_dir = "F:/Wajahat/hand_in_pocket/Hands_in_pocket_tp/tp21-4"
     # video_name = "c2_v4"
     output_dir = "C:/wajahat/hand_in_pocket/dataset/training"
     json_path = "qiyas_multicam.camera_final.json"

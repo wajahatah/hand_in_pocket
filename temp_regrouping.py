@@ -2,7 +2,7 @@ import pandas as pd
 import os
 import re
 
-input_csv = "temp_keypoint_l1_norm"
+input_csv = "temp_keypoint_l1_v2_norm"
 df = pd.read_csv(f"C:/wajahat/hand_in_pocket/dataset/split_keypoint/combined/{input_csv}.csv")
 
 columns = df.columns[1:-1]

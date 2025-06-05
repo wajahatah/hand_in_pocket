@@ -11,7 +11,7 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 # Load models
 kp_model = YOLO("C:/wajahat/hand_in_pocket/bestv7-2.pt")
-rf_model = joblib.load("rf_models/rf_temp_norm_l1.joblib")  # your temporal model
+rf_model = joblib.load("rf_models/rf_grid_temp_norm_l1.joblib")  # your temporal model
 
 video_path = "C:/wajahat/hand_in_pocket/test_bench/tp_t2.mp4"
 #"F:/Wajahat/hand_in_pocket/hand_in_pocket/cam_1/chunk_26-02-25_10-15-desk1-2-3.avi"

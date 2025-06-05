@@ -12,7 +12,7 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 kp_model = YOLO("C:/wajahat/hand_in_pocket/bestv7-2.pt")
 rf_model = joblib.load("rf_models/rf_ds_1.joblib")
 
-video_path = "F:/Wajahat/hand_in_pocket/hand_in_pocket/cam_1/chunk_26-02-25_10-15-desk1-2-3.avi"
+video_path = "C:/wajahat/hand_in_pocket/test_bench/tp_t3.mp4"
 cap = cv2.VideoCapture(video_path)
 
 def draw_lines(frame, keypoints, connections):
@@ -82,15 +82,14 @@ while cap.isOpened():
 
             # Add position estimation (based on x of first keypoint)
             person_x = keypoints[0][0]
-            if person_x < 363:
+            if person_x < 395:
                 position = -1
-            elif 365 < person_x < 728:
+            elif 400 < person_x < 861:
                 position = 0
-            elif 730 < person_x: 
-            # < 973:
+            # elif 610 < person_x < 953:
+            #     position = 0
+            else:
                 position = 1
-            # else:
-            #     position = 2
 
             feature_dict['position'] = position
 
@@ -101,8 +100,11 @@ while cap.isOpened():
             prediction = rf_model.predict(input_df)[0]
 
             # Draw prediction on the frame
-            label = "Hand in Pocket" if prediction == 1 else "No Hand in Pocket"
-            cv2.putText(frame, label, (int(person_x), 50 + person_idx * 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+            if prediction == 1:
+                # label = "Hand in Pocket"
+                cv2.putText(frame, "Hand in Pocket", (int(person_x), 50 + person_idx * 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+            else:
+                cv2.putText(frame, "No Hand in Pocket", (int(person_x), 50 + person_idx * 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
     cv2.imshow("Inference", frame)
     if cv2.waitKey(1) & 0xFF == ord('q'):

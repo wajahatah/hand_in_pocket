@@ -6,7 +6,7 @@ import glob
 input_folder = "C:/wajahat/hand_in_pocket/dataset/training"
 output_dir = "C:/wajahat/hand_in_pocket/dataset/training/combined"
 os.makedirs(output_dir, exist_ok=True)  # Create output directory if it doesn't exist
-output_file = 'combined_2.csv'
+output_file = 'combined_3.csv'
 output_file = os.path.join(output_dir, output_file)
 
 # Load and combine all CSVs
