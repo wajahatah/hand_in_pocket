@@ -2,10 +2,12 @@ import pandas as pd
 import os
 import glob
 
-input_folder = "C:/wajahat/hand_in_pocket/dataset/training"
-output_dir = "C:/wajahat/hand_in_pocket/dataset/training/combined"
+# input_folder = "C:/wajahat/hand_in_pocket/dataset/training"
+input_folder = "C:/wajahat/hand_in_pocket/dataset/split_keypoint"
+# output_dir = "C:/wajahat/hand_in_pocket/dataset/training/combined"
+output_dir = "C:/wajahat/hand_in_pocket/dataset/split_keypoint/combined"
 os.makedirs(output_dir, exist_ok=True)  # Create output directory if it doesn't exist
-output_file = 'temp_tp1.csv'
+output_file = 'temp_distance_l1_v2.csv'
 output_file = os.path.join(output_dir, output_file)
 
 window_size = 5  # Size of the rolling window
@@ -33,7 +35,8 @@ for file in csv_files:
     if feature_cols is None:
         feature_cols = [col for col in df.columns if col != target_column]
         # print(f"Feature columns: {feature_cols}")
-        assert len(feature_cols) * window_size == 150, "Feature columns length match"
+        # assert len(feature_cols) * window_size == 150, "Feature columns length match" # for combined csvs
+        assert len(feature_cols) * window_size == 105, "Feature columns length match" # for split csvs
 
     file_name = os.path.basename(file)
 
