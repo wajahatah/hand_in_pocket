@@ -25,7 +25,8 @@ if __name__ == "__main__":
     kp_model = YOLO("C:/wajahat/hand_in_pocket/bestv7-2.pt")
     rf_model = joblib.load("rf_models/rf_temp_norm_pos_gen.joblib")  # your temporal model
 
-    input_dir = "C:/Users/LAMBDA THETA/Videos"
+    # input_dir = "C:/Users/LAMBDA THETA/Videos"
+    input_dir = "C:/wajahat/hand_in_pocket/test_bench"
     json_path = "qiyas_multicam.camera_final.json"
 
     video_files = [f for f in os.listdir(input_dir) if f.endswith('.mp4')]

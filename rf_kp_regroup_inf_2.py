@@ -1,3 +1,6 @@
+# the change in this script is of the position values, it fetch the list of positions from the json file and then 
+# parse it to the position_a, position_b, position_c, position_d values at the end of the feature vector
+
 from ultralytics import YOLO
 import os
 import cv2
@@ -21,7 +24,8 @@ if __name__ == "__main__":
     kp_model = YOLO("C:/wajahat/hand_in_pocket/bestv7-2.pt")
     rf_model = joblib.load("rf_models/rf_temp_regrouped_pos_gen.joblib")
 
-    input_dir = "C:/Users/LAMBDA THETA/Videos"
+    # input_dir = "C:/Users/LAMBDA THETA/Videos"
+    input_dir = "C:/wajahat/hand_in_pocket/test_bench"
     json_path = "qiyas_multicam.camera_final.json"
 
     video_files = [f for f in os.listdir(input_dir) if f.endswith('.mp4')]
@@ -148,10 +152,10 @@ if __name__ == "__main__":
                         flat_feature["position_d"] = pos_list[3]
 
                         input_df = pd.DataFrame([flat_feature])
-                        # print(f"Input DF for position {position}:")
-                        # print(input_df)
+                        print(f"Input DF for position {position}:")
+                        print(input_df)
 
-                        # input_df.to_csv("input_df.txt", index=True, sep='\t')
+                        input_df.to_csv("input_df.txt", index=True, sep='\t')
 
                         prediction = rf_model.predict(input_df)[0]
 

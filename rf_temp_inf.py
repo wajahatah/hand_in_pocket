@@ -11,9 +11,9 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 # Load models
 kp_model = YOLO("C:/wajahat/hand_in_pocket/bestv7-2.pt")
-rf_model = joblib.load("rf_models/rf_3.joblib")  # your temporal model
+rf_model = joblib.load("rf_models/rf_temp_l3.joblib")  # your temporal model
 
-video_path = "C:/wajahat/hand_in_pocket/test_bench/cam_6_t1.mp4"
+video_path = "C:/wajahat/hand_in_pocket/test_bench/cam_4_t1.mp4"
 #"F:/Wajahat/hand_in_pocket/hand_in_pocket/cam_1/chunk_26-02-25_10-15-desk1-2-3.avi"
 cap = cv2.VideoCapture(video_path)
 
@@ -75,12 +75,12 @@ while cap.isOpened():
                 continue
 
             person_x = keypoints[0][0]
-            if person_x < 315:
-                position = -2
-            elif 320 < person_x < 667:
-                position = -1
-            elif 670 < person_x < 1015:
+            if person_x < 460:
                 position = 0
+            elif 465 < person_x < 895:
+                position = 1
+            # elif 670 < person_x < 1015:
+            #     position = 0
             else:
                 position = 2
             feature_dict['position'] = position
@@ -95,11 +95,15 @@ while cap.isOpened():
                     for key, value in frame_feats.items():
                         flat_feature[f"{key}_t{idx}"] = value
                 input_df = pd.DataFrame([flat_feature])
-                print(input_df)
+                # print(input_df)
                 prediction = rf_model.predict(input_df)[0]
 
-                label = "Hand in Pocket" if prediction == 1 else "No Hand in Pocket"
-                cv2.putText(frame, label, (int(person_x), 50 + person_idx * 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                # label = "Hand in Pocket" if prediction == 1 else "No Hand in Pocket"
+                if prediction == 1:
+                    cv2.putText(frame, "Hand in Pocket", (int(person_x), 50 + person_idx * 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0, 255), 2)
+                    
+                else:
+                    cv2.putText(frame, "No Hand in Pocket", (int(person_x), 50 + person_idx * 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
     cv2.imshow("Temporal Inference", frame)
     if cv2.waitKey(1) & 0xFF == ord('q'):

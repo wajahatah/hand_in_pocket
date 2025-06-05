@@ -27,8 +27,8 @@ if __name__ == "__main__":
     rf_model = joblib.load("rf_models/rf_grid_temp_norm_l1_v2.joblib")  # your temporal model
 
     # video_path = "C:/wajahat/hand_in_pocket/test_bench/tp_t2.mp4"
-    # input_dir = "C:/wajahat/hand_in_pocket/test_bench"
-    input_dir = "C:/Users/LAMBDA THETA/Videos"
+    input_dir = "C:/wajahat/hand_in_pocket/test_bench"
+    # input_dir = "C:/Users/LAMBDA THETA/Videos"
     json_path = "qiyas_multicam.camera_final.json"
     # json_path = "qiyas_multicam_2.camera.json"
 
