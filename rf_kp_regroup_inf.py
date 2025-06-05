@@ -19,10 +19,10 @@ def assign_roi_index(x):
 
 if __name__ == "__main__":
     kp_model = YOLO("C:/wajahat/hand_in_pocket/bestv7-2.pt")
-    rf_model = joblib.load("rf_models/rf_temp_regrouped_balance-6.joblib")  # your temporal model
+    rf_model = joblib.load("rf_models/rf_grid_temp_norm_regrouped_l1_v2.joblib")  # your temporal model
 
-    # input_dir = "C:/wajahat/hand_in_pocket/test_bench"
-    input_dir = "C:/Users/LAMBDA THETA/Videos"
+    input_dir = "C:/wajahat/hand_in_pocket/test_bench"
+    # input_dir = "C:/Users/LAMBDA THETA/Videos"
     json_path = "qiyas_multicam.camera_final.json"
 
     video_files = [f for f in os.listdir(input_dir) if f.endswith('.mp4')]
@@ -156,10 +156,10 @@ if __name__ == "__main__":
                         # flat_feature["hand_in_pocket"] = 0  # Dummy, needed for model input
 
                         input_df = pd.DataFrame([flat_feature])
-                        # print(input_df)
+                        print(input_df)
 
                         # txt_filename = model_name.replace(".joblib", "_feature_importances.txt")
-                        # input_df.to_csv("input_df.txt", index=False, sep='\t')
+                        input_df.to_csv("input_df.txt", index=False, sep='\t')
 
                         prediction = rf_model.predict(input_df)[0]
 
@@ -171,7 +171,7 @@ if __name__ == "__main__":
                                         cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
 
             cv2.imshow("Temporal Inference", frame)
-            if cv2.waitKey(0) & 0xFF == ord('q'):
+            if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
 
         cap.release()
