@@ -1,0 +1,452 @@
+[{
+  "_id": "camera_1",
+  "url": "C:/wajahat/hall2_videos/cam_1/chunk17-16-21.mp4",
+  "enable": "true",
+  "cluster": "cluster_1",
+  "i_angle": 75,
+  "e_angle": 90,
+  "data": {
+    "1": {
+      "desk": 1,
+      "xmin": 25,
+      "ymin": 90,
+      "xmax": 410,
+      "ymax": 630,
+      "left_x": 0,
+      "left_y": 400,
+      "right_x": 390,
+      "right_y": 420
+    },
+    "2": {
+      "desk": 2,
+      "xmin": 430,
+      "ymin": 90,
+      "xmax": 870,
+      "ymax": 630,
+      "left_x": 395,
+      "left_y": 416,
+      "right_x": 835,
+      "right_y": 416
+    },
+    "3": {
+      "desk": 3,
+      "xmin": 890,
+      "ymin": 75,
+      "xmax": 1270,
+      "ymax": 630,
+      "left_x": 840,
+      "left_y": 416,
+      "right_x": 1256,
+      "right_y": 416
+    }
+  }
+},
+{
+  "_id": "camera_2",
+  "url": "rtsp://10.85.120.91:9000/live",
+  "enable": "true",
+  "cluster": "cluster_1",
+  "i_angle": 75,
+  "e_angle": 90,
+  "data": {
+    "1": {
+      "desk": 4,
+      "xmin": 5,
+      "ymin": 70,
+      "xmax": 338,
+      "ymax": 630,
+      "left_x": 26,
+      "left_y": 414,
+      "right_x": 460,
+      "right_y": 405
+    },
+    "2": {
+      "desk": 5,
+      "xmin": 350,
+      "ymin": 75,
+      "xmax": 790,
+      "ymax": 630,
+      "left_x": 465,
+      "left_y": 410,
+      "right_x": 895,
+      "right_y": 415
+    },
+    "3": {
+      "desk": 6,
+      "xmin": 807,
+      "ymin": 75,
+      "xmax": 1190,
+      "ymax": 630,
+      "left_x": 900,
+      "left_y": 415,
+      "right_x": 1261,
+      "right_y": 425
+    }
+  }
+},
+{
+  "_id": "camera_3",
+  "url": "rtsp://10.85.120.244:9000/live",
+  "enable": "true",
+  "cluster": "cluster_1",
+  "i_angle": 75,
+  "e_angle": 90,
+  "data": {
+    "1": {
+      "desk": 7,
+      "xmin": 250,
+      "ymin": 85,
+      "xmax": 760,
+      "ymax": 690,
+      "left_x": 200,
+      "left_y": 508,
+      "right_x": 670,
+      "right_y": 508
+    },
+    "2": {
+      "desk": 8,
+      "xmin": 780,
+      "ymin": 120,
+      "xmax": 1200,
+      "ymax": 690,
+      "left_x": 685,
+      "left_y": 508,
+      "right_x": 1152,
+      "right_y": 508
+    }
+  }
+},
+{
+  "_id": "camera_4",
+  "url": "C:/wajahat/hall2_videos/cam_",
+  "enable": "true",
+  "cluster": "cluster_1",
+  "i_angle": 60,
+  "e_angle": 80,
+  "data": {
+    "1": {
+      "desk": 12,
+      "xmin": 1,
+      "ymin": 90,
+      "xmax": 240,
+      "ymax": 530,
+      "left_x": 0,
+      "left_y": 373,
+      "right_x": 260,
+      "right_y": 320
+    },
+    "2": {
+      "desk": 11,
+      "xmin": 260,
+      "ymin": 80,
+      "xmax": 605,
+      "ymax": 530,
+      "left_x": 260,
+      "left_y": 320,
+      "right_x": 895,
+      "right_y": 315
+    },
+    "3": {
+      "desk": 10,
+      "xmin": 620,
+      "ymin": 65,
+      "xmax": 970,
+      "ymax": 530,
+      "left_x": 610,
+      "left_y": 315,
+      "right_x": 950,
+      "right_y": 312
+    },
+    "4": {
+      "desk": 9,
+      "xmin": 995,
+      "ymin": 65,
+      "xmax": 1279,
+      "ymax": 530,
+      "left_x": 615,
+      "left_y": 312,
+      "right_x": 1279,
+      "right_y": 325
+    }
+  }
+},
+{
+  "_id": "camera_5",
+  "url": "rtsp://10.85.120.100:9000/live",
+  "enable": "true",
+  "cluster": "cluster_1",
+  "i_angle": 60,
+  "e_angle": 80,
+  "data": {
+    "1": {
+      "desk": 16,
+      "xmin": 0,
+      "ymin": 70,
+      "xmax": 200,
+      "ymax": 520,
+      "left_x": 0,
+      "left_y": 400,
+      "right_x": 256,
+      "right_y": 326
+    },
+    "2": {
+      "desk": 15,
+      "xmin": 240,
+      "ymin": 60,
+      "xmax": 580,
+      "ymax": 520,
+      "left_x": 260,
+      "left_y": 326,
+      "right_x": 605,
+      "right_y": 328
+    },
+    "3": {
+      "desk": 14,
+      "xmin": 600,
+      "ymin": 60,
+      "xmax": 953,
+      "ymax": 520,
+      "left_x": 633,
+      "left_y": 328,
+      "right_x": 960,
+      "right_y": 332
+    },
+    "4": {
+      "desk": 13,
+      "xmin": 970,
+      "ymin": 70,
+      "xmax": 1260,
+      "ymax": 520,
+      "left_x": 950,
+      "left_y": 332,
+      "right_x": 1250,
+      "right_y": 350
+    }
+  }
+},
+{
+  "_id": "camera_6",
+  "url": "rtsp://10.85.120.107:9000/live",
+  "enable": "true",
+  "cluster": "cluster_1",
+  "i_angle": 75,
+  "e_angle": 90,
+  "data": {
+    "1": {
+      "desk": 17,
+      "xmin": 1,
+      "ymin": 90,
+      "xmax": 255,
+      "ymax": 530,
+      "left_x": 11,
+      "left_y": 335,
+      "right_x": 315,
+      "right_y": 308
+    },
+    "2": {
+      "desk": 18,
+      "xmin": 290,
+      "ymin": 65,
+      "xmax": 620,
+      "ymax": 550,
+      "left_x": 320,
+      "left_y": 308,
+      "right_x": 667,
+      "right_y": 311
+    },
+    "3": {
+      "desk": 19,
+      "xmin": 635,
+      "ymin": 65,
+      "xmax": 975,
+      "ymax": 550,
+      "left_x": 670,
+      "left_y": 311,
+      "right_x": 1015,
+      "right_y": 318
+    },
+    "4": {
+      "desk": 20,
+      "xmin": 1000,
+      "ymin": 70,
+      "xmax": 1275,
+      "ymax": 550,
+      "left_x": 1020,
+      "left_y": 318,
+      "right_x": 1275,
+      "right_y": 340
+    }
+  }
+},
+{
+  "_id": "camera_7",
+  "url": "rtsp://10.85.120.104:9000/live",
+  "enable": "true",
+  "cluster": "cluster_1",
+  "i_angle": 75,
+  "e_angle": 90,
+  "data": {
+    "1": {
+      "desk": 21,
+      "xmin": 1,
+      "ymin": 90,
+      "xmax": 270,
+      "ymax": 510,
+      "left_x": 0,
+      "left_y": 384,
+      "right_x": 282,
+      "right_y": 337
+    },
+    "2": {
+      "desk": 22,
+      "xmin": 285,
+      "ymin": 70,
+      "xmax": 650,
+      "ymax": 510,
+      "left_x": 285,
+      "left_y": 337,
+      "right_x": 619,
+      "right_y": 327
+    },
+    "3": {
+      "desk": 23,
+      "xmin": 665,
+      "ymin": 70,
+      "xmax": 1030,
+      "ymax": 510,
+      "left_x": 621,
+      "left_y": 327,
+      "right_x": 955,
+      "right_y": 327
+    },
+    "4": {
+      "desk": 24,
+      "xmin": 1040,
+      "ymin": 80,
+      "xmax": 1275,
+      "ymax": 510,
+      "left_x": 960,
+      "left_y": 327,
+      "right_x": 1250,
+      "right_y": 345
+    }
+  }
+},
+{
+  "_id": "camera_8",
+  "url": "rtsp://10.85.120.109:9000/live",
+  "enable": "true",
+  "cluster": "cluster_1",
+  "i_angle": 75,
+  "e_angle": 90,
+  "data": {
+    "1": {
+      "desk": 27,
+      "xmin": 1,
+      "ymin": 110,
+      "xmax": 365,
+      "ymax": 615,
+      "left_x": 10,
+      "left_y": 423,
+      "right_x": 430,
+      "right_y": 428
+    },
+    "2": {
+      "desk": 26,
+      "xmin": 378,
+      "ymin": 90,
+      "xmax": 825,
+      "ymax": 615,
+      "left_x": 435,
+      "left_y": 428,
+      "right_x": 875,
+      "right_y": 431
+    },
+    "3": {
+      "desk": 25,
+      "xmin": 840,
+      "ymin": 90,
+      "xmax": 1250,
+      "ymax": 615,
+      "left_x": 880,
+      "left_y": 431,
+      "right_x": 1260,
+      "right_y": 432
+    }
+  }
+},
+{
+  "_id": "camera_9",
+  "url": "rtsp://10.85.120.114:9000/live",
+  "enable": "true",
+  "cluster": "cluster_1",
+  "i_angle": 75,
+  "e_angle": 90,
+  "data": {
+    "1": {
+      "desk": 30,
+      "xmin": 40,
+      "ymin": 105,
+      "xmax": 450,
+      "ymax": 650,
+      "left_x": 0,
+      "left_y": 457,
+      "right_x": 395,
+      "right_y": 453
+    },
+    "2": {
+      "desk": 29,
+      "xmin": 465,
+      "ymin": 90,
+      "xmax": 920,
+      "ymax": 650,
+      "left_x": 400,
+      "left_y": 453,
+      "right_x": 861,
+      "right_y": 445
+    },
+    "3": {
+      "desk": 28,
+      "xmin": 935,
+      "ymin": 90,
+      "xmax": 1275,
+      "ymax": 650,
+      "left_x": 865,
+      "left_y": 445,
+      "right_x": 1270,
+      "right_y": 459
+    }
+  }
+},
+{
+  "_id": "camera_10",
+  "url": "rtsp://10.85.120.101:9000/live",
+  "enable": "true",
+  "cluster": "cluster_1",
+  "i_angle": 75,
+  "e_angle": 90,
+  "data": {
+    "1": {
+      "desk": 32,
+      "xmin": 45,
+      "ymin": 120,
+      "xmax": 495,
+      "ymax": 700,
+      "left_x": 55,
+      "left_y": 591,
+      "right_x": 500,
+      "right_y": 500
+    },
+    "2": {
+      "desk": 31,
+      "xmin": 520,
+      "ymin": 130,
+      "xmax": 1020,
+      "ymax": 700,
+      "left_x": 505,
+      "left_y": 505,
+      "right_x": 1000,
+      "right_y": 520
+    }
+  }
+}]
