@@ -30,20 +30,20 @@ def calculate_distances(keypoint_list, connections, conf_th=0.5):
     return distances
 
 def assign_roi_index(x):
-    if x < 680:
-        return 8
-    # elif 395 < x < 835:
-    #     return 2
+    if x < 390:
+        return -1
+    elif 395 < x < 835:
+        return 0
     # elif 840 < x < 1280:
     #     return 1
     else:
-        return 7
+        return 2
 
 if __name__ == "__main__":
     model = YOLO("C:/wajahat/hand_in_pocket/bestv7-2.pt")
     # input_dir = "C:/Users/LAMBDA THETA/Videos/new_class"
-    input_dir = "F:/Wajahat/hand_in_pocket/Hands_in_pocket_tp"
-    video_name = "v1.mp4"
+    input_dir = "F:/Wajahat/hand_in_pocket/Hands_in_pocket_tp/tp21-4"
+    video_name = "c1_v9.mp4"
     output_dir = "C:/wajahat/hand_in_pocket/dataset/training"
     frames_dir = os.path.join(output_dir, "frames")
     os.makedirs(frames_dir, exist_ok=True)
