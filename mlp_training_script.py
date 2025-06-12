@@ -13,11 +13,11 @@ BATCH_SIZE = 32
 EPOCHS = 300
 PATIENCE = 10
 # MODEL_PATH = "mlp_hand_in_pocket.pt"
-model_name = "mlp_temp_norm_pos_gen-c3"
+model_name = "mlp_temp_norm_regrouped_pos_gen-c4"
 label_column = 'hand_in_pocket'  
 
 # -------- Load Dataset --------
-csv_name = 'temp_kp_l1_v2_norm_pos_gen.csv' 
+csv_name = 'temp_kp_l1_v2_norm_sorted_pos_gen.csv' 
 df = pd.read_csv(f'C:/wajahat/hand_in_pocket/dataset/split_keypoint/combined/{csv_name}')  # Replace with your actual path
 
 df = df.drop(columns=['source_file']) 
@@ -45,19 +45,19 @@ class MLP(nn.Module):
     def __init__(self, input_size, hidden_size):
         super(MLP, self).__init__()
         self.net = nn.Sequential(
-            nn.Linear(104, 128),
-            nn.ReLU(),
-            nn.Linear(128, 64),
-            # nn.Linear(104, 64),
-            nn.ReLU(),
-            nn.Dropout(0.3),
-            nn.Linear(64, 32),
-            nn.ReLU(),
-            nn.Dropout(0.3),
-            nn.Linear(32, 16),
+            # nn.Linear(104, 128),
+            # nn.ReLU(),
+            # nn.Linear(128, 64),
+            nn.Linear(104, 64),
             nn.ReLU(),
             # nn.Dropout(0.3),
-            nn.Linear(16, 1),
+            nn.Linear(64, 32),
+            nn.ReLU(),
+            # nn.Dropout(0.3),
+            nn.Linear(32, 1),
+            # nn.ReLU(),
+            # nn.Dropout(0.3),
+            # nn.Linear(16, 1),
             nn.Sigmoid()
         )
 

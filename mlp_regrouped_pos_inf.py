@@ -52,18 +52,28 @@ class MLP(nn.Module):
         # )
 
         # for c3 model architecture
+        # self.net = nn.Sequential(
+        #     nn.Linear(104, 128),
+        #     nn.ReLU(),
+        #     nn.Linear(128, 64),
+        #     nn.ReLU(),
+        #     nn.Dropout(0.3),
+        #     nn.Linear(64, 32),
+        #     nn.ReLU(),
+        #     nn.Dropout(0.3),
+        #     nn.Linear(32, 16),
+        #     nn.ReLU(),
+        #     nn.Linear(16, 1),
+        #     nn.Sigmoid()
+        # )
+
+        # for c4 model architecture
         self.net = nn.Sequential(
-            nn.Linear(104, 128),
+            nn.Linear(104, 64),
             nn.ReLU(),
-            nn.Linear(128, 64),
-            nn.ReLU(),
-            nn.Dropout(0.3),
             nn.Linear(64, 32),
             nn.ReLU(),
-            nn.Dropout(0.3),
-            nn.Linear(32, 16),
-            nn.ReLU(),
-            nn.Linear(16, 1),
+            nn.Linear(32, 1),
             nn.Sigmoid()
         )
 
@@ -89,7 +99,7 @@ def load_mlp_model(weights_path, device):
 if __name__ == "__main__":
     kp_model = YOLO("C:/wajahat/hand_in_pocket/bestv7-2.pt")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    mlp_model = load_mlp_model("rf_models/mlp_temp_norm_regrouped_pos_gen-c3.pt", device)
+    mlp_model = load_mlp_model("rf_models/mlp_temp_norm_regrouped_pos_gen-c4.pt", device)
 
     # input_dir = "C:/Users/LAMBDA THETA/Videos"
     input_dir = "C:/wajahat/hand_in_pocket/test_bench"
