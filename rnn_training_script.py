@@ -40,14 +40,14 @@ class RNNClassifier(nn.Module):
         super(RNNClassifier, self).__init__()
         self.rnn = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
         self.fc = nn.Linear(hidden_size, 1)
-        # self.sigmoid = nn.Sigmoid()
+        self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
         out, _ = self.rnn(x)
         out = out[:, -1, :]  # take output of last time step
         out = self.fc(out)
-        # return self.sigmoid(out).squeeze(1)
-        return out.squeeze(1)
+        return self.sigmoid(out).squeeze(1)
+        # return out.squeeze(1)
 
 # -------------------- Training Loop --------------------
 # def train_model(csv_path, epochs=50, batch_size=32, lr=0.001, patience=5, model_save_path='best_rnn_model.pth'):
@@ -65,8 +65,8 @@ def train_model(csv_path, epochs, batch_size, lr, patience, model_save_path):
     # test_loader = DataLoader(test_set, batch_size=batch_size)
 
     model = RNNClassifier()
-    # criterion = nn.BCELoss()
-    criterion = nn.BCEWithLogitsLoss()
+    criterion = nn.BCELoss()
+    # criterion = nn.BCEWithLogitsLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
     best_val_loss = float('inf')
@@ -151,7 +151,7 @@ csv_path = "C:/wajahat/hand_in_pocket/dataset/split_keypoint/combined/temp_kp_l1
 epochs = 300
 batch_size = 32
 lr = 0.001
-model_name = "rnn_norm_pos_gen-c0.pth"
+model_name = "rnn_norm_pos_gen-c00.pth"
 # model_save_path = "best_rnn_model.pth"
 model_save_path = f"rf_models/{model_name}"
 patience = 10
