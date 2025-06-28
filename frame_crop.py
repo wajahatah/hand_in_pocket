@@ -47,7 +47,8 @@ for frame_path in tqdm(sorted(all_frames)):
         parts = frame_name.split("_")
         cam_id = parts[0]  # c1
         vid_id = parts[1]  # v1
-        frame_id = parts[2].split(".")[0]  # f0000
+        frame_str = parts[2].split(".")[0]  # f0000
+        frame_id = int(frame_str[1:])
         # print("part:", parts, "cam:", cam_id, "vid:", vid_id)
 
         video_key = f"{cam_id}_{vid_id}"
