@@ -40,7 +40,7 @@ def load_rnn_model(weights_path, device):
 if __name__ == "__main__":
     kp_model = YOLO("C:/wajahat/hand_in_pocket/bestv7-2.pt")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    rnn_model = load_rnn_model("rf_models/rnn_norm_pos_gen-c0.pth", device)
+    rnn_model = load_rnn_model("rf_models/rnn_norm_pos_gen-c00.pth", device)
 
     input_dir = "C:/wajahat/hand_in_pocket/test_bench"
     json_path = "qiyas_multicam.camera_final.json"
@@ -157,10 +157,16 @@ if __name__ == "__main__":
                         cv2.putText(frame, f"Desk: {roi_data['desk']}, Pos: {roi_data['position']}",
                                     (int(person_x), 100 + person_idx * 30),
                                     cv2.FONT_HERSHEY_SIMPLEX, 0.6, (130, 180, 0), 2)
+                        
+                        if prediction ==1:
+                            cv2.imshow("RNN Inference", frame)
+                            cv2.waitKey(0)
 
-            cv2.imshow("RNN Inference", frame)
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
+                        else:
+
+                            cv2.imshow("RNN Inference", frame)
+                            if cv2.waitKey(1) & 0xFF == ord('q'):
+                                break
 
         cap.release()
     cv2.destroyAllWindows()

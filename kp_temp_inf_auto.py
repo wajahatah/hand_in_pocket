@@ -1,3 +1,6 @@
+""" this script do the inference with one position value from the json file basis on the camera ID
+it work for the temporal normalized keypoint data without repositioning and temporal not normalized keypoint data without repositioning"""
+
 from ultralytics import YOLO
 import os
 import cv2
@@ -27,7 +30,8 @@ if __name__ == "__main__":
     rf_model = joblib.load("rf_models/rf_grid_temp_norm_l1_v2.joblib")  # your temporal model
 
     # video_path = "C:/wajahat/hand_in_pocket/test_bench/tp_t2.mp4"
-    input_dir = "C:/wajahat/hand_in_pocket/test_bench"
+    # input_dir = "C:/wajahat/hand_in_pocket/test_bench"
+    input_dir = "F:/Wajahat/hand_in_pocket/qiyas_test"
     # input_dir = "C:/Users/LAMBDA THETA/Videos"
     json_path = "qiyas_multicam.camera_final.json"
     # json_path = "qiyas_multicam_2.camera.json"
@@ -205,9 +209,16 @@ if __name__ == "__main__":
                             cv2.putText(frame, "No Hand in Pocket", (int(person_x), 50 + person_idx * 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
                             # cv2.putText(frame, "No Hand in Pocket", (int(50), int(50)), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
 
-            cv2.imshow("Temporal Inference", frame)
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
+                        cv2.imshow("GRU Inference", frame)
+                        if prediction == 1:
+                            cv2.waitKey(0)
+                        else:
+                            if cv2.waitKey(1) & 0xFF == ord('q'):
+                                break
+
+            # cv2.imshow("Temporal Inference", frame)
+            # if cv2.waitKey(1) & 0xFF == ord('q'):
+            #     break
 
     cap.release()
     cv2.destroyAllWindows()

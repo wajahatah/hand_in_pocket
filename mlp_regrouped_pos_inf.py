@@ -102,7 +102,8 @@ if __name__ == "__main__":
     mlp_model = load_mlp_model("rf_models/mlp_temp_norm_regrouped_pos_gen-c4.pt", device)
 
     # input_dir = "C:/Users/LAMBDA THETA/Videos"
-    input_dir = "C:/wajahat/hand_in_pocket/test_bench"
+    # input_dir = "C:/wajahat/hand_in_pocket/test_bench"
+    input_dir = "F:/Wajahat/hand_in_pocket/qiyas_test"
     json_path = "qiyas_multicam.camera_final.json"
     WINDOW_SIZE = 5
 
@@ -230,10 +231,18 @@ if __name__ == "__main__":
                         cv2.putText(frame, f"Desk: {roi_data['desk']}, Pos: {roi_data['position']}",
                                     (int(person_x), 100 + person_idx * 30),
                                     cv2.FONT_HERSHEY_SIMPLEX, 0.6, (130, 180, 0), 2)
+                        
 
-            cv2.imshow("MLP Inference", frame)
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
+                        cv2.imshow("GRU Inference", frame)
+                        if prediction == 1:
+                            cv2.waitKey(0)
+                        else:
+                            if cv2.waitKey(1) & 0xFF == ord('q'):
+                                break
+
+            # cv2.imshow("MLP Inference", frame)
+            # if cv2.waitKey(1) & 0xFF == ord('q'):
+            #     break
 
         cap.release()
     cv2.destroyAllWindows()

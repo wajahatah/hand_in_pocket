@@ -26,7 +26,8 @@ if __name__ == "__main__":
     rf_model = joblib.load("rf_models/rf_temp_norm_pos_gen.joblib")  # your temporal model
 
     # input_dir = "C:/Users/LAMBDA THETA/Videos"
-    input_dir = "C:/wajahat/hand_in_pocket/test_bench"
+    # input_dir = "C:/wajahat/hand_in_pocket/test_bench"
+    input_dir = "F:/Wajahat/hand_in_pocket/qiyas_test"
     json_path = "qiyas_multicam.camera_final.json"
 
     video_files = [f for f in os.listdir(input_dir) if f.endswith('.mp4')]
@@ -157,9 +158,16 @@ if __name__ == "__main__":
                         color = (0, 0, 255) if prediction == 1 else (0, 255, 0)
                         cv2.putText(frame, label, (int(person_x), 50 + person_idx * 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, color, 2)
 
-            cv2.imshow("Temporal Inference", frame)
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
+                        cv2.imshow("Temporal Inference", frame)
+                        if prediction == 1:
+                            cv2.waitKey(0)
+                        else:
+                            if cv2.waitKey(1) & 0xFF == ord('q'):
+                                break
+
+            # cv2.imshow("Temporal Inference", frame)
+            # if cv2.waitKey(1) & 0xFF == ord('q'):
+            #     break
 
     cap.release()
     cv2.destroyAllWindows()
