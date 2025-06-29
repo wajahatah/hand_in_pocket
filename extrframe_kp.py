@@ -3,8 +3,8 @@ from ultralytics import YOLO
 import os
 import cv2
 
-frame_folder = "F:/Wajahat/hand_in_pocket/frames/no_hp"
-output_folder = "F:/Wajahat/hand_in_pocket/frames/kp_no_hp"
+frame_folder = "F:/Wajahat/hand_in_pocket/frames/without_kp/no_hp"
+output_folder = "F:/Wajahat/hand_in_pocket/frames/kp_no_hp/jjjj"
 os.makedirs(output_folder, exist_ok=True)
 
 img = [f for f in os.listdir(frame_folder) if f.endswith('.jpg') or f.endswith('.png')]
@@ -30,8 +30,8 @@ for image in img:
             if conf > 0.5:
                 cv2.circle(frame, (int(x), int(y)), 5, (0, 255, 0), -1)
 
-    cv2.imshow("Keypoints", frame)
-    key = cv2.waitKey(1)
+    # cv2.imshow("Keypoints", frame)
+    # key = cv2.waitKey(1)
 
     output_path = os.path.join(output_folder, image)
     cv2.imwrite(output_path, frame)
