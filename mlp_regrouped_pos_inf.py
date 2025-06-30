@@ -7,6 +7,7 @@ import pandas as pd
 import json
 from collections import deque
 from ultralytics import YOLO
+import time
 
 # ========== MLP Model ==========
 class MLP(nn.Module):
@@ -94,6 +95,9 @@ def load_mlp_model(weights_path, device):
     model.to(device)
     model.eval()
     return model
+
+
+mlp_times = []
 
 # ========== Main Inference ==========
 if __name__ == "__main__":
@@ -221,7 +225,14 @@ if __name__ == "__main__":
                         # print(input_tensor)
 
                         with torch.no_grad():
+                            start = time.time()
+                            # print(f"start_time: {start}")
                             prob = mlp_model(input_tensor).item()
+                            end = time.time()
+                            # print(f"end_time: {end}")
+                            mlp_times.append(end - start)
+                            # print(f"Prediction time: {(end - start)*1000:.4f} seconds")
+                            print(f"[Person {person_idx} | Pos {position}] Start: {start:.6f}, End: {end:.6f}, Time: {(end - start)*1000:.4f} ms")
                             prediction = 1 if prob >= 0.5 else 0
 
                         label = "Hand in Pocket" if prediction else "No Hand in Pocket"
@@ -233,16 +244,24 @@ if __name__ == "__main__":
                                     cv2.FONT_HERSHEY_SIMPLEX, 0.6, (130, 180, 0), 2)
                         
 
-                        cv2.imshow("GRU Inference", frame)
-                        if prediction == 1:
-                            cv2.waitKey(0)
-                        else:
-                            if cv2.waitKey(1) & 0xFF == ord('q'):
-                                break
+                        # cv2.imshow("GRU Inference", frame)
+                        # if prediction == 1:
+                        #     cv2.waitKey(1)
+                        # else:
+                        #     if cv2.waitKey(1) & 0xFF == ord('q'):
+                        #         break
 
-            # cv2.imshow("MLP Inference", frame)
-            # if cv2.waitKey(1) & 0xFF == ord('q'):
-            #     break
+            cv2.imshow("MLP Inference", frame)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
 
         cap.release()
+
+        if mlp_times:
+            avg_time = sum(mlp_times) / len(mlp_times)
+            # print(f"Average MLP inference time: {avg_time:.4f} seconds")
+            print(f"[MLP] Average inference time: {avg_time*1000:.3f} ms over {len(mlp_times)} samples")
+            print(f"Max: {max(mlp_times)*1000:.3f} ms, Min: {min(mlp_times)*1000:.3f} ms")
+
+
     cv2.destroyAllWindows()
