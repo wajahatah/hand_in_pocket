@@ -8,6 +8,7 @@ import json
 from collections import deque
 from ultralytics import YOLO
 import time
+import statistics as stats
 
 # ========== MLP Model ==========
 class MLP(nn.Module):
@@ -219,31 +220,63 @@ if __name__ == "__main__":
 
                         # print(f"Ordered columns: {ordered_columns}")
                         # ordered_columns += [f"position_t{t}" for t in range(WINDOW_SIZE)]
-                        input_tensor = torch.tensor([[flat_feature[col] for col in ordered_columns]], dtype=torch.float32).to(device)
-
+                        
+                        # for single frame inference
+                        # input_tensor = torch.tensor([[flat_feature[col] for col in ordered_columns]], dtype=torch.float32).to(device)
                         # print(f"Position: {position}")
                         # print(input_tensor)
 
+                        # with torch.no_grad():
+                        #     start = time.time()
+                        #     # print(f"start_time: {start}")
+                        #     prob = mlp_model(input_tensor).item()
+                        #     end = time.time()
+                        #     # print(f"end_time: {end}")
+                        #     mlp_times.append(end - start)
+                        #     # print(f"Prediction time: {(end - start)*1000:.4f} seconds")
+                        #     print(f"[Person {person_idx} | Pos {position}] Start: {start:.6f}, End: {end:.6f}, Time: {(end - start)*1000:.4f} ms")
+                        #     prediction = 1 if prob >= 0.5 else 0
+
+
+                        # for batch inference of mlp model
+                        # start here 
+                        input_vector = [flat_feature[col] for col in ordered_columns]
+
+                        batch_tensor = torch.tensor([input_vector for _ in range(10)], dtype=torch.float32).to(device)
+                        print("##################################################")
+                        # print(f"Batch Tensor: {batch_tensor}")
+
                         with torch.no_grad():
                             start = time.time()
-                            # print(f"start_time: {start}")
-                            prob = mlp_model(input_tensor).item()
+                            probs = mlp_model(batch_tensor)
                             end = time.time()
-                            # print(f"end_time: {end}")
                             mlp_times.append(end - start)
-                            # print(f"Prediction time: {(end - start)*1000:.4f} seconds")
                             print(f"[Person {person_idx} | Pos {position}] Start: {start:.6f}, End: {end:.6f}, Time: {(end - start)*1000:.4f} ms")
-                            prediction = 1 if prob >= 0.5 else 0
+                            
+                            for i in range(10):
+                                prob = probs[i].item()
+                                prediction = 1 if prob >= 0.5 else 0
+                                label = "Hand in Pocket" if prediction else "No Hand in Pocket"
+                                color = (0, 0, 255) if prediction else (0, 255, 0)
 
-                        label = "Hand in Pocket" if prediction else "No Hand in Pocket"
-                        color = (0, 0, 255) if prediction else (0, 255, 0)
-                        cv2.putText(frame, f"{label} ({prob:.2f})", (int(person_x), 50 + person_idx * 30),
-                                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
-                        cv2.putText(frame, f"Desk: {roi_data['desk']}, Pos: {roi_data['position']}",
-                                    (int(person_x), 100 + person_idx * 30),
-                                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (130, 180, 0), 2)
+                                cv2.putText(frame, f"{label} ({prob:.2f})", (int(person_x), 50 + person_idx * 30),
+                                            cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
+                                cv2.putText(frame, f"Desk: {roi_data['desk']}, Pos: {roi_data['position']}",
+                                            (int(person_x), 100 + person_idx * 30),
+                                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (130, 180, 0), 2)
+                        # end here
+
+                        # uncomment below lines for single frame inference
+                        # label = "Hand in Pocket" if prediction else "No Hand in Pocket"
+                        # color = (0, 0, 255) if prediction else (0, 255, 0)
+                        # cv2.putText(frame, f"{label} ({prob:.2f})", (int(person_x), 50 + person_idx * 30),
+                        #             cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
+                        # cv2.putText(frame, f"Desk: {roi_data['desk']}, Pos: {roi_data['position']}",
+                        #             (int(person_x), 100 + person_idx * 30),
+                        #             cv2.FONT_HERSHEY_SIMPLEX, 0.6, (130, 180, 0), 2)
                         
 
+                        # uncomment below lines to stop the video on prediction 
                         # cv2.imshow("GRU Inference", frame)
                         # if prediction == 1:
                         #     cv2.waitKey(1)
@@ -257,11 +290,26 @@ if __name__ == "__main__":
 
         cap.release()
 
+
+    # Print MLP inference statistics
         if mlp_times:
             avg_time = sum(mlp_times) / len(mlp_times)
+            median_time = stats.median(mlp_times)
+
+            nonzero = [t for t in mlp_times if t > 0]
+            if nonzero:
+                try:
+                    # mode_time = stats.mode(mlp_times)
+                    mode_time = stats.mode(nonzero)
+                except stats.StatisticsError:
+                    mode_time = "No unique mode"
+
+            
             # print(f"Average MLP inference time: {avg_time:.4f} seconds")
             print(f"[MLP] Average inference time: {avg_time*1000:.3f} ms over {len(mlp_times)} samples")
             print(f"Max: {max(mlp_times)*1000:.3f} ms, Min: {min(mlp_times)*1000:.3f} ms")
+            print(f"Median : {median_time * 1000:.3f} ms")
+            print(f"Mode   : {mode_time if isinstance(mode_time, str) else f'{mode_time * 1000:.3f} ms'}")
 
 
     cv2.destroyAllWindows()
