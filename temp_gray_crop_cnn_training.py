@@ -10,7 +10,7 @@ from sklearn.model_selection import train_test_split
 from tqdm import tqdm
 
 # ==================== CONFIG ====================
-data_root = "C:/wajahat/hand_in_pocket/dataset/without_kp_crop"
+data_root = "/home/ubuntu/wajahat/hp/kp_crop/"
 temporal_window = 5
 img_size = 640
 batch_size = 8
@@ -65,8 +65,11 @@ class TemporalGrayDataset(Dataset):
             img = cv2.resize(img, (img_size, img_size))
             img = img.astype(np.float32) / 255.0
             clip.append(img)
-        clip_tensor = torch.tensor(clip).unsqueeze(1)  # shape: (5, 1, 640, 640)
-        clip_tensor = clip_tensor.squeeze(1)  # (5, 640, 640)
+
+        clip_np = np.array(clip) 
+        clip_tensor = torch.tensor(clip_np, dtype=torch.float32)  # shape: (5, 640, 640)
+        # clip_tensor = torch.tensor(clip).unsqueeze(1)  # shape: (5, 1, 640, 640)
+        # clip_tensor = clip_tensor.squeeze(1)  # (5, 640, 640)
         label_tensor = torch.tensor(self.label, dtype=torch.float32)
         return clip_tensor, label_tensor
 
@@ -84,7 +87,9 @@ class TemporalCNN(nn.Module):
         )
         self.fc = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(16 * 5 * 160 * 160, 64),
+            nn.Linear(16 * 5 * 160 * 160, 128),
+            nn.ReLU(),
+            nn.Linear(128, 64),
             nn.ReLU(),
             nn.Linear(64, 1),
             nn.Sigmoid()
@@ -144,7 +149,7 @@ for epoch in range(epochs):
 
     if val_loss < best_loss:
         best_loss = val_loss
-        torch.save(model.state_dict(), "best_temporal_model.pt")
+        torch.save(model.state_dict(), model_name)
         early_stop_counter = 0
         print("Saved new best model.")
     else:
