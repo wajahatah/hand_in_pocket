@@ -10,10 +10,10 @@ import pandas as pd
 from tqdm import tqdm
 
 # ======== CONFIG ========
-frames_dir = ["/home/ubuntu/wajahat/hp/without_kp_frames/hp", "/home/ubuntu/wajahat/hp/without_kp_frames/no_hp"]
-csv_dir = "/home/ubuntu/wajahat/hp/cnn_combine.csv"
-roi_json_path = "/home/ubuntu/wajahat/hp/qiyas_multicam.camera_final.json"
-output_dir = "/home/ubuntu/wajahat/hp/without_kp_crop"
+frames_dir = ["C:/wajahat/hand_in_pocket/dataset/without_kp/hp", "C:/wajahat/hand_in_pocket/dataset/without_kp/no_hp"]
+csv_dir = "C:/wajahat/hand_in_pocket/dataset/split_keypoint/combined/cnn_combine.csv"
+roi_json_path = "qiyas_multicam.camera_final.json"
+output_dir = "C:/wajahat/hand_in_pocket/dataset/scheck/without_kp_crop"
 
 os.makedirs(os.path.join(output_dir, "hand_in_pocket"), exist_ok=True)
 os.makedirs(os.path.join(output_dir, "no_hand_in_pocket"), exist_ok=True)
@@ -103,7 +103,8 @@ for frame_path in tqdm(sorted(all_frames)):
             xmin, xmax = desk_info["xmin"], desk_info["xmax"]
             ymin, ymax = desk_info["ymin"], desk_info["ymax"]
 
-            crop = frame_img[ymin:ymax, xmin:xmax]  # keep RGB
+            # crop = frame_img[ymin:ymax, xmin:xmax]  # keep RGB
+            crop = frame_img[:, xmin:xmax]  # keep RGB
             crop_resized = cv2.resize(crop, (640, 640))
 
             # cv2.imshow("cropped roi", crop_resized)
