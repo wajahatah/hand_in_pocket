@@ -13,11 +13,12 @@ from ultralytics import YOLO
 # video_path = "C:/wajahat/hand_in_pocket/test_bench/fp_t1.mp4"
 input_path = "C:/wajahat/hand_in_pocket/test_bench/"
 json_path = "qiyas_multicam.camera_final.json"
-model_path = "C:/wajahat/hand_in_pocket/rf_models/cnn_temp_gray_crop-1.pth"
+model_path = "C:/wajahat/hand_in_pocket/rf_models/cnn_temp_gray_crop_withoutkp-1.pth"
 temporal_window = 5
 img_size = 640
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 kp_model = YOLO("bestv7-2.pt")
+keypoints = False  
 
 # ============ MODEL DEFINITION ============
 class TemporalCNN(nn.Module):
@@ -118,18 +119,19 @@ for video_file in video_files:
         display_frame = frame.copy()
         display_frame = cv2.resize(display_frame, (1280, 720))  # Resize for better visibility
 
-        results = kp_model(frame)
-        for result in results:
-            if not hasattr(result, 'keypoints') or result.keypoints is None:
-                continue
+        if keypoints == True:
+            results = kp_model(frame)
+            for result in results:
+                if not hasattr(result, 'keypoints') or result.keypoints is None:
+                    continue
 
-            keypoints_tensor = result.keypoints.data
-            for person_idx, kp_tensor in enumerate(keypoints_tensor):
-                for i, keypoint in enumerate(kp_tensor[:10]):
-                    x, y, conf = keypoint[:3].cpu().numpy()
-                    if conf > 0.5:
-                        cv2.circle(frame, (int(x), int(y)), 5, (0, 255, 0), -1)
-                        cv2.circle(display_frame, (int(x), int(y)), 5, (0, 255, 0), -1)
+                keypoints_tensor = result.keypoints.data
+                for person_idx, kp_tensor in enumerate(keypoints_tensor):
+                    for i, keypoint in enumerate(kp_tensor[:10]):
+                        x, y, conf = keypoint[:3].cpu().numpy()
+                        if conf > 0.5:
+                            cv2.circle(frame, (int(x), int(y)), 5, (0, 255, 0), -1)
+                            cv2.circle(display_frame, (int(x), int(y)), 5, (0, 255, 0), -1)
 
 
         for desk_id, roi in desk_data.items():
