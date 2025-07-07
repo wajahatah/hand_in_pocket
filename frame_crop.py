@@ -12,6 +12,7 @@ from tqdm import tqdm
 # ======== CONFIG ========
 frames_dir = ["C:/wajahat/hand_in_pocket/dataset/without_kp/hp", "C:/wajahat/hand_in_pocket/dataset/without_kp/no_hp"]
 csv_dir = "C:/wajahat/hand_in_pocket/dataset/split_keypoint/combined/cnn_combine.csv"
+# csv_dir = "C:/wajahat/hand_in_pocket/dataset/split_keypoint/c3_v4_keypoints.csv"
 roi_json_path = "qiyas_multicam.camera_final.json"
 output_dir = "C:/wajahat/hand_in_pocket/dataset/scheck/without_kp_crop"
 
@@ -41,9 +42,19 @@ for cam_entry in roi_list:
 df_all = pd.read_csv(csv_dir)
 
 df_all.dropna(subset=['frame', 'desk_no', 'source_file'], inplace=True)
+# df_all.pop('person_idx')
+# df_all.dropna(subset=['frame', 'desk_no'], inplace=True)
 df_all['frame'] = df_all['frame'].astype(int)
 df_all['desk_no'] = df_all['desk_no'].astype(int)
 # df_all.set_index(['source_file', 'desk_no', 'frame'], inplace=True)
+
+# print(df_all[:, 0])
+
+prev_value = None
+for val in df_all['source_file']:
+    if val != prev_value:
+        print(val)
+    prev_value = val
 
 
 # ======== PROCESS FRAMES ========
@@ -53,6 +64,9 @@ for base_dir in frames_dir:
         for f in files:
             if f.endswith(".jpg"):
                 all_frames.append(os.path.join(root, f))
+
+vid = None
+debug_source_file = "c4_v12.csv"  
 
 for frame_path in tqdm(sorted(all_frames)):
     try:
@@ -70,6 +84,9 @@ for frame_path in tqdm(sorted(all_frames)):
         cam_num = cam_id[1:]  # extract number from c1 → 1
         camera_key = f"camera_{cam_num}"
 
+        if debug_source_file is not None and source_file != debug_source_file:
+            continue
+
         # print("Available keys in csv_index:", list(csv_index.keys()))
 
         if camera_key not in roi_data:
@@ -81,7 +98,11 @@ for frame_path in tqdm(sorted(all_frames)):
         #     # print("not found")
         #     continue
 
+        if vid != video_key:
+            print(f"processing {video_key}")
+            vid = video_key
 
+        # print(f"Processing {video_key}...")
         frame_img = cv2.imread(frame_path)
         if frame_img is None:
             continue
@@ -107,9 +128,9 @@ for frame_path in tqdm(sorted(all_frames)):
             crop = frame_img[:, xmin:xmax]  # keep RGB
             crop_resized = cv2.resize(crop, (640, 640))
 
-            # cv2.imshow("cropped roi", crop_resized)
-            # if cv2.waitKey(1) & 0xFF == ord('q'):
-            #     break
+            cv2.imshow("cropped roi", crop_resized)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
 
             label = 0
             try:
@@ -140,9 +161,17 @@ for frame_path in tqdm(sorted(all_frames)):
                 "hand_in_pocket" if label == 1 else "no_hand_in_pocket",
                 out_name
             )
+            print(f'name {out_name}, path {out_path}')
             cv2.imwrite(out_path, crop_resized)
+            success = cv2.imwrite(out_path, crop_resized)
+
+            if not success: 
+                print(f"Failed to save {out_path}")
 
     except Exception as e:
         print(f"Error processing {frame_path}: {e}")
+        with open("error_log.txt", "a") as log_file:
+            log_file.write(f"Error processing {frame_path}: {e}\n")
+
 
 cv2.destroyAllWindows()
