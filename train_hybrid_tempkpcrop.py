@@ -12,6 +12,8 @@ def train_model(csv_path, crop_root, epochs, batch_size, model_name, lr=1e-3, pa
     train_size = len(dataset) - val_size
     train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
 
+    print(f"Training samples: {len(train_dataset)}, Validation samples: {len(val_dataset)}")
+
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=batch_size)
 
@@ -72,7 +74,7 @@ def train_model(csv_path, crop_root, epochs, batch_size, model_name, lr=1e-3, pa
 
 
 csv_path = "C:/wajahat/hand_in_pocket/dataset/split_keypoint/combined/cnn_combine.csv"
-crop_root = "C:/wajahat/hand_in_pocket/dataset/without_kp_crop"
+crop_root = "C:/wajahat/hand_in_pocket/dataset/scheck/without_kp_crop"
 epochs = 50
 batch_size = 16
 model_name = "hybrid_tempkpcrop_model.pth"

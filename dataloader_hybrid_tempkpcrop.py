@@ -14,6 +14,8 @@ class TemporalKeypointCropDataset(Dataset):
         self.crop_root = crop_root
         self.window_size = window_size
         self.samples = []
+        total_rows = 0
+        skiped_rows = 0
 
         for i in range(len(self.df) - window_size + 1):
             window = self.df.iloc[i:i + window_size]
@@ -29,14 +31,21 @@ class TemporalKeypointCropDataset(Dataset):
                 all_images_exist = True
                 for _, row in window.iterrows():
                     frame = int(row['frame'])
-                    img_name = f"{source_file}_d{desk_no}_{frame}.jpg"
+                    img_name = f"{source_file}_d{desk_no}_f{frame}.jpg"
                     if not any(os.path.exists(os.path.join(self.crop_root, folder, img_name)) for folder in ["hand_in_pocket", "no_hand_in_pocket"]):
                         all_images_exist = False
                         print(f"Missing crop for {img_name}")
+                        skiped_rows += 1
+                        with open("missing_crops.txt", "a") as f:
+                            f.write(f"Missing crop for {img_name} \n")
                         # break
                         continue
                 if all_images_exist:
                     self.samples.append(window)
+                    total_rows +=1
+
+        print(f"Total individual samples: {total_rows * window_size}")
+        print(f"Skipped samples due to missing crops: {skiped_rows}")
 
     def __len__(self):
         return len(self.samples)
@@ -52,7 +61,7 @@ class TemporalKeypointCropDataset(Dataset):
 
         for _, row in window.iterrows():
             frame = int(row['frame'])
-            img_name = f"{source_file}_d{desk_no}_{frame}.jpg"
+            img_name = f"{source_file}_d{desk_no}_f{frame}.jpg"
             for folder in ["hand_in_pocket", "no_hand_in_pocket"]:
                 img_path = os.path.join(self.crop_root, folder, img_name)
                 if os.path.exists(img_path):
