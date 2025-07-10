@@ -7,7 +7,7 @@ from PIL import Image
 # ========== CONFIG ==========
 video_path = "C:/wajahat/hand_in_pocket/test_bench/cam_1_t1.mp4"
 # output_path = 'output_crossentropy.mp4'
-model_path = "C:/wajahat/hand_in_pocket/rf_models/cnn_rn_arg_aug.pth"
+model_path = "C:/wajahat/hand_in_pocket/rf_models/cnn_rn_sig_aug.pth"
 img_size = 640
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -18,27 +18,8 @@ transform = transforms.Compose([
 ])
 
 # ========== LOAD MODEL (TWO OUTPUT NEURONS) ==========
-model = models.resnet18(pretrained=False)
-model.fc = nn.Linear(model.fc.in_features, 2)  # 2 classes
-model.load_state_dict(torch.load(model_path, map_location=device))
-model.to(device)
-model.eval()
-
-def predict_frame(frame):
-    img_pil = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-    img_tensor = transform(img_pil).unsqueeze(0).to(device)
-
-    with torch.no_grad():
-        output = model(img_tensor)  # shape: [1, 2]
-        probs = torch.softmax(output, dim=1).squeeze(0)  # shape: [2]
-        prediction = torch.argmax(probs).item()
-        confidence = probs[prediction].item()
-        label = "HAND IN POCKET" if prediction == 1 else "NO HAND IN POCKET"
-    return label, confidence
-
-# ========== LOAD MODEL (One OUTPUT NEURON) ==========
 # model = models.resnet18(pretrained=False)
-# model.fc = nn.Linear(model.fc.in_features, 1)  # 1 class
+# model.fc = nn.Linear(model.fc.in_features, 2)  # 2 classes
 # model.load_state_dict(torch.load(model_path, map_location=device))
 # model.to(device)
 # model.eval()
@@ -48,11 +29,31 @@ def predict_frame(frame):
 #     img_tensor = transform(img_pil).unsqueeze(0).to(device)
 
 #     with torch.no_grad():
-#         output = model(img_tensor).squeeze(1)
-#         prob = torch.sigmoid(output)  # shape: [1]
-#         prediction = 1 if prob > 0.5 else 0  
+#         output = model(img_tensor)  # shape: [1, 2]
+#         probs = torch.softmax(output, dim=1).squeeze(0)  # shape: [2]
+#         prediction = torch.argmax(probs).item()
+#         confidence = probs[prediction].item()
 #         label = "HAND IN POCKET" if prediction == 1 else "NO HAND IN POCKET"
-#     return label, prob 
+#     return label, confidence
+
+# ========== LOAD MODEL (One OUTPUT NEURON) ==========
+model = models.resnet18(pretrained=False)
+model.fc = nn.Linear(model.fc.in_features, 1)  # 1 class
+model.load_state_dict(torch.load(model_path, map_location=device))
+model.to(device)
+model.eval()
+
+def predict_frame(frame):
+    img_pil = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+    img_tensor = transform(img_pil).unsqueeze(0).to(device)
+
+    with torch.no_grad():
+        output = model(img_tensor).squeeze(1)
+        prob = torch.sigmoid(output)
+        confd = prob.item()  # shape: [1]
+        prediction = 1 if prob > 0.5 else 0  
+        label = "HAND IN POCKET" if prediction == 1 else "NO HAND IN POCKET"
+    return label, confd 
 
 # ========== LOAD VIDEO ==========
 cap = cv2.VideoCapture(video_path)
