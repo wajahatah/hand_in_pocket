@@ -4,7 +4,8 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, random_split
 from dataloader_hybrid_tempkpcrop import TemporalKeypointCropDataset
-from model_hybrid_tempkpcrop import FusionModel
+# from model_hybrid_tempkpcrop import FusionModel
+from model_3dcnn_hybrid import Fusion3DCNNKeypointModel as FusionModel # 3D CNN model architecture
 
 def train_model(csv_path, crop_root, epochs, batch_size, model_name, lr=1e-3, patience=5):
     dataset = TemporalKeypointCropDataset(csv_path, crop_root)
@@ -77,5 +78,5 @@ csv_path = "C:/wajahat/hand_in_pocket/dataset/split_keypoint/combined/cnn_combin
 crop_root = "C:/wajahat/hand_in_pocket/dataset/scheck/without_kp_crop"
 epochs = 50
 batch_size = 16
-model_name = "hybrid_tempkpcrop_model.pth"
+model_name = "hybrid_tempkpcrop_model3.pth"
 train_model(csv_path, crop_root, epochs, batch_size, model_name, lr=1e-3, patience=5)
