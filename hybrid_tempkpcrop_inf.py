@@ -6,12 +6,13 @@ import numpy as np
 from PIL import Image
 from collections import deque
 from ultralytics import YOLO
-# from model_hybrid_tempkpcrop import FusionModel  # Make sure this is accessible
+from model_hybrid_tempkpcrop import FusionModel  # Make sure this is accessible
+# from model_3dcnn_hybrid import Fusion3DCNNKeypointModel as FusionModel  # 3D CNN model architecture
 import torch.nn as nn
 
 # ========= CONFIG =========
 YOLO_MODEL_PATH = "bestv7-2.pt"
-FUSION_MODEL_PATH = "rf_models/hybrid_tempkpcrop_model-1.pth"
+FUSION_MODEL_PATH = "rf_models/hybrid_tempkpcrop_model2-1.pth"
 JSON_PATH = "qiyas_multicam.camera_final.json"
 VIDEO_DIR = "C:/wajahat/hand_in_pocket/test_bench"
 # VIDEO_DIR = "F:/Wajahat/hand_in_pocket/qiyas_test"
@@ -19,7 +20,11 @@ CROP_SIZE = (64, 64)
 WINDOW_SIZE = 5
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
+global color, label
+color = (0,0,0)
+
 # ======== Model Architecture =========
+"""
 class CropCNN(nn.Module):
     def __init__(self, out_dim=128):
         super().__init__()
@@ -72,6 +77,7 @@ class FusionModel(nn.Module):
         kpt_feat = self.kpt_mlp(keypoints)  # (B, 128)
         fused = torch.cat([crop_feat, kpt_feat], dim=-1)  # (B, 768)
         return self.classifier(fused)
+"""
 
 # ========= LOAD MODELS =========
 print("Loading YOLO keypoint model...")
@@ -187,60 +193,60 @@ for video_file in video_files:
                 if not roi:
                     continue
 
-                # xmin, ymin, xmax, ymax = roi['xmin'], roi['ymin'], roi['xmax'], roi['ymax']
+                xmin, ymin, xmax, ymax = roi['xmin'], roi['ymin'], roi['xmax'], roi['ymax']
                 # print(f"position: {position}, xmin: {xmin}, ymin: {ymin}, xmax: {xmax}, ymax: {ymax}")
-                # crop = frame[:, xmin:xmax]
+                crop = frame[:, xmin:xmax]
 
-                for desk_id, roi in desk_data.items():
-                    xmin, xmax = roi['xmin'], roi['xmax']
-                    ymin, ymax = roi['ymin'], roi['ymax']
-                    desk_num = roi['desk']
-                    print(f"desk: {desk_num}, xmin: {xmin}, xmax: {xmax}, ymin: {ymin}, ymax: {ymax}")
+                desk_num = roi['desk']
+                # for desk_id, roi in desk_data.items():
+                #     xmin, xmax = roi['xmin'], roi['xmax']
+                #     ymin, ymax = roi['ymin'], roi['ymax']
+                    # print(f"desk: {desk_num}, xmin: {xmin}, xmax: {xmax}, ymin: {ymin}, ymax: {ymax}")
 
-                    crop = frame[:, xmin:xmax]
-                    # cv2.imshow(f"crop_desk_{desk_num}", crop)
+                    # crop = frame[:, xmin:xmax]
+                # cv2.imshow(f"crop_desk_{desk_num}", crop)
 
-                    gray = cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY)
-                    gray_resized = cv2.resize(gray, CROP_SIZE)
-                    norm_crop = gray_resized.astype(np.float32) / 255.0
-                    crop_tensor = torch.tensor(norm_crop, device=DEVICE).unsqueeze(0).unsqueeze(0)  # (1,1,64,64)
+                gray = cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY)
+                gray_resized = cv2.resize(gray, CROP_SIZE)
+                norm_crop = gray_resized.astype(np.float32) / 255.0
+                crop_tensor = torch.tensor(norm_crop, device=DEVICE).unsqueeze(0).unsqueeze(0)  # (1,1,64,64)
 
-                    keypoint_tensor = torch.tensor(keypoints, dtype=torch.float32, device=DEVICE).unsqueeze(0)
+                keypoint_tensor = torch.tensor(keypoints, dtype=torch.float32, device=DEVICE).unsqueeze(0)
 
-                    # Fill sliding window
-                    sliding_window[position].append((crop_tensor, keypoint_tensor))
+                # Fill sliding window
+                sliding_window[position].append((crop_tensor, keypoint_tensor))
 
-                    if len(sliding_window[position]) == WINDOW_SIZE:
-                        # FIX: Properly stack the crops to get (1, 5, 1, 64, 64) shape
-                        crops_list = [x[0] for x in sliding_window[position]]  # List of (1,1,64,64) tensors
-                        crops_stack = torch.stack(crops_list, dim=1)  # Stack along time dimension: (1, 5, 1, 64, 64)
-                        # crops_stack is already on the correct device since individual tensors are on device
-                        
-                        # FIX: Properly handle keypoints tensor
-                        kpts_list = [x[1] for x in sliding_window[position]]  # List of (1,20) tensors
-                        kpts_tensor = torch.stack(kpts_list, dim=0)  # (5, 1, 20)
-                        kpts_tensor = kpts_tensor.view(-1)  # Flatten to (100,)
-                        
-                        # Add position value to make it 101 dimensions
-                        position_tensor = torch.tensor([roi['position']], dtype=torch.float32, device=DEVICE)
-                        keypoints_with_pos = torch.cat([kpts_tensor, position_tensor]).unsqueeze(0)  # (1,101)
+                if len(sliding_window[position]) == WINDOW_SIZE:
+                    # FIX: Properly stack the crops to get (1, 5, 1, 64, 64) shape
+                    crops_list = [x[0] for x in sliding_window[position]]  # List of (1,1,64,64) tensors
+                    crops_stack = torch.stack(crops_list, dim=1)  # Stack along time dimension: (1, 5, 1, 64, 64)
+                    # crops_stack is already on the correct device since individual tensors are on device
+                    
+                    # FIX: Properly handle keypoints tensor
+                    kpts_list = [x[1] for x in sliding_window[position]]  # List of (1,20) tensors
+                    kpts_tensor = torch.stack(kpts_list, dim=0)  # (5, 1, 20)
+                    kpts_tensor = kpts_tensor.view(-1)  # Flatten to (100,)
+                    
+                    # Add position value to make it 101 dimensions
+                    position_tensor = torch.tensor([roi['position']], dtype=torch.float32, device=DEVICE)
+                    keypoints_with_pos = torch.cat([kpts_tensor, position_tensor]).unsqueeze(0)  # (1,101)
 
-                        # Debug prints to verify shapes
-                        # print(f"crops_stack shape: {crops_stack.shape}")  # Should be (1, 5, 1, 64, 64)
-                        # print(f"keypoints_with_pos shape: {keypoints_with_pos.shape}")  # Should be (1, 101)
-                        # print(f"crops_stack device: {crops_stack.device}")
-                        # print(f"keypoints_with_pos device: {keypoints_with_pos.device}")
-                        # print(f"position: {position}, keypoints_with_pos: {keypoints_with_pos}, crops_stack: {crops_stack}")
+                    # Debug prints to verify shapes
+                    # print(f"crops_stack shape: {crops_stack.shape}")  # Should be (1, 5, 1, 64, 64)
+                    # print(f"keypoints_with_pos shape: {keypoints_with_pos.shape}")  # Should be (1, 101)
+                    # print(f"crops_stack device: {crops_stack.device}")
+                    # print(f"keypoints_with_pos device: {keypoints_with_pos.device}")
+                    # print(f"position: {position}, keypoints_with_pos: {keypoints_with_pos}, crops_stack: {crops_stack}")
 
-                        with torch.no_grad():
-                            output = fusion_model(crops_stack, keypoints_with_pos)
-                            pred = output.argmax(dim=1).item()
-                            label = "HAND IN POCKET" if pred == 1 else "NO HAND"
-                            color = (0, 0, 255) if pred == 1 else (0, 255, 0)
+                    with torch.no_grad():
+                        output = fusion_model(crops_stack, keypoints_with_pos)
+                        pred = output.argmax(dim=1).item()
+                        label = "HAND IN POCKET" if pred == 1 else "NO HAND"
+                        color = (0, 0, 255) if pred == 1 else (0, 255, 0)
 
-                        cv2.rectangle(display_frame, (xmin, ymin), (xmax, ymax), color, 2)
-                        cv2.putText(display_frame, f"Desk {roi['desk']} - {label}",
-                                    (xmin, ymin - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
+                    cv2.rectangle(display_frame, (xmin, ymin), (xmax, ymax), color, 2)
+                    cv2.putText(display_frame, f"Desk {roi['desk']} - {label}",
+                                (xmin, ymin - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
 
         cv2.imshow("Hybrid Inference", display_frame)
         if cv2.waitKey(1) & 0xFF == ord("q"):
