@@ -3,9 +3,9 @@ import json
 import re
 
 # === File paths ===
-input_csv = "C:/wajahat/hand_in_pocket/dataset/split_keypoint/combined/combined_2.csv"
+input_csv = "C:/wajahat/hand_in_pocket/dataset/split_keypoint/combined/cnn_combine_norm.csv"
 output_dir = 'C:/wajahat/hand_in_pocket/dataset/split_keypoint/combined'
-csv_name = 'combined_2_pos_gen.csv'
+csv_name = 'cnn_combine_norm_pos_gen.csv'
 output_csv = f"{output_dir}/{csv_name}"
 json_file = "C:/wajahat/hand_in_pocket/qiyas_multicam.camera_final.json"
 

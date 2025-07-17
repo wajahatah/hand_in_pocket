@@ -6,13 +6,13 @@ import numpy as np
 from PIL import Image
 from collections import deque
 from ultralytics import YOLO
-from model_hybrid_tempkpcrop import FusionModel  # Make sure this is accessible
+# from model_hybrid_tempkpcrop import FusionModel  # Make sure this is accessible
 # from model_3dcnn_hybrid import Fusion3DCNNKeypointModel as FusionModel  # 3D CNN model architecture
 import torch.nn as nn
 
 # ========= CONFIG =========
 YOLO_MODEL_PATH = "bestv7-2.pt"
-FUSION_MODEL_PATH = "rf_models/hybrid_tempkpcrop_model2-1.pth"
+FUSION_MODEL_PATH = "rf_models/hybrid_tempkpcrop_model-1.pth"
 JSON_PATH = "qiyas_multicam.camera_final.json"
 VIDEO_DIR = "C:/wajahat/hand_in_pocket/test_bench"
 # VIDEO_DIR = "F:/Wajahat/hand_in_pocket/qiyas_test"
@@ -24,7 +24,7 @@ global color, label
 color = (0,0,0)
 
 # ======== Model Architecture =========
-"""
+# """
 class CropCNN(nn.Module):
     def __init__(self, out_dim=128):
         super().__init__()
@@ -77,7 +77,7 @@ class FusionModel(nn.Module):
         kpt_feat = self.kpt_mlp(keypoints)  # (B, 128)
         fused = torch.cat([crop_feat, kpt_feat], dim=-1)  # (B, 768)
         return self.classifier(fused)
-"""
+# """
 
 # ========= LOAD MODELS =========
 print("Loading YOLO keypoint model...")

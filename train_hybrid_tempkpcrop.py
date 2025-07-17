@@ -74,9 +74,9 @@ def train_model(csv_path, crop_root, epochs, batch_size, model_name, lr=1e-3, pa
                 break
 
 
-csv_path = "C:/wajahat/hand_in_pocket/dataset/split_keypoint/combined/cnn_combine.csv"
+csv_path = "C:/wajahat/hand_in_pocket/dataset/split_keypoint/combined/cnn_combine_norm.csv"
 crop_root = "C:/wajahat/hand_in_pocket/dataset/scheck/without_kp_crop"
 epochs = 50
 batch_size = 16
-model_name = "hybrid_tempkpcrop_model3.pth"
+model_name = "hybrid_tempkpcrop_norm.pth"
 train_model(csv_path, crop_root, epochs, batch_size, model_name, lr=1e-3, patience=5)
