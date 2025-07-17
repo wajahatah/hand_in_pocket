@@ -3,10 +3,10 @@ import os
 import glob
 
 # Path to your folder with the 17 CSV files
-input_folder = "C:/wajahat/hand_in_pocket/dataset/training"
-output_dir = "C:/wajahat/hand_in_pocket/dataset/training/combined"
+input_folder = "C:/wajahat/hand_in_pocket/dataset/split_keypoint"
+output_dir = "C:/wajahat/hand_in_pocket/dataset/split_keypoint/combined"
 os.makedirs(output_dir, exist_ok=True)  # Create output directory if it doesn't exist
-output_file = 'combined_3.csv'
+output_file = 'combined_2.csv'
 output_file = os.path.join(output_dir, output_file)
 
 # Load and combine all CSVs
