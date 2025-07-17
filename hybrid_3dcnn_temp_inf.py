@@ -200,7 +200,7 @@ for video_file in video_files:
 
                 print(f"crop desk: {desk_num}")
                 crop = frame[:, xmin:xmax]  # Fixed cropping region
-                cv2.imshow(f"desk_{desk_num}", crop)
+                # cv2.imshow(f"desk_{desk_num}", crop)
 
                 gray = cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY)
                 gray_resized = cv2.resize(gray, CROP_SIZE)
@@ -239,7 +239,7 @@ for video_file in video_files:
                                 (xmin, ymin - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
 
         cv2.imshow("3D CNN Hybrid Inference", display_frame)
-        if cv2.waitKey(0) & 0xFF == ord("q"):
+        if cv2.waitKey(1) & 0xFF == ord("q"):
             break
 
     cap.release()
