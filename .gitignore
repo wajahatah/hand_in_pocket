@@ -10,3 +10,10 @@
 *.mp4
 *.txt
 *.joblib
+*.pth
+*.h5
+*.npy
+*.pkl
+*.zip
+*.pt
+*.lnk
