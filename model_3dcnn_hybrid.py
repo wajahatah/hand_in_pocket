@@ -30,7 +30,7 @@ class Crop3DCNN(nn.Module):
 
 # ==== Keypoint MLP Encoder ====
 class KeypointMLP(nn.Module):
-    def __init__(self, in_dim=101, out_dim=32):
+    def __init__(self, in_dim=104, out_dim=32):
         super().__init__()
         self.model = nn.Sequential(
             nn.Linear(in_dim, 128), nn.ReLU(),
@@ -47,7 +47,7 @@ class Fusion3DCNNKeypointModel(nn.Module):
     def __init__(self, crop_feat_dim=32, kpt_feat_dim=32):
         super().__init__()
         self.cnn = Crop3DCNN(out_dim=crop_feat_dim)
-        self.kpt = KeypointMLP(in_dim=101, out_dim=kpt_feat_dim)
+        self.kpt = KeypointMLP(in_dim=104, out_dim=kpt_feat_dim)
 
         self.classifier = nn.Sequential(
             nn.Linear(crop_feat_dim + kpt_feat_dim, 256),
