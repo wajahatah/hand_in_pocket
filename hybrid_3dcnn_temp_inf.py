@@ -11,7 +11,7 @@ from ultralytics import YOLO
 
 # ========= CONFIG =========
 YOLO_MODEL_PATH = "bestv7-2.pt"
-FUSION_MODEL_PATH = "rf_models/hybrid_tempkpcrop_model3-1.pth"
+FUSION_MODEL_PATH = "rf_models/hybrid_3dcnn_kpnorm_model-1.pth"
 JSON_PATH = "qiyas_multicam.camera_final.json"
 VIDEO_DIR = "C:/wajahat/hand_in_pocket/test_bench"
 CROP_SIZE = (64, 64)
@@ -166,18 +166,42 @@ for video_file in video_files:
                 keypoints_c = []
                 for kp in kp_tensor[:10]:
                     x, y, conf = kp[:3].cpu().numpy()
+                    
+                    # without normalized keypoints model
+                    # start here
+                #     if conf < 0.5:
+                #         x, y = 0, 0
+                #     keypoints_c.append((x, y))
+                #     keypoints.extend([x, y])
+
+                #     cv2.circle(frame, (int(x), int(y)), 5, (0, 255, 0), -1)
+                #     cv2.circle(display_frame, (int(x), int(y)), 5, (0, 255, 0), -1)
+
+                # if not keypoints_c or all(x == 0 and y == 0 for x, y in keypoints_c):
+                #     continue
+
+                # person_x = keypoints_c[0][0]
+                # end here
+                    
+                    # with normalized keypoint model
+                    # start here
                     if conf < 0.5:
-                        x, y = 0, 0
+                        x, y = -1, -1
+
+                    x = x / 1280
+                    y = y / 720
                     keypoints_c.append((x, y))
                     keypoints.extend([x, y])
 
-                    cv2.circle(frame, (int(x), int(y)), 5, (0, 255, 0), -1)
-                    cv2.circle(display_frame, (int(x), int(y)), 5, (0, 255, 0), -1)
+                    cv2.circle(frame, (int(x * 1280), int(y * 720)), 5, (0, 255, 0), -1)
+                    cv2.circle(display_frame, (int(x * 1280), int(y * 720)), 5, (0, 255, 0), -1)
 
-                if not keypoints_c or all(x == 0 and y == 0 for x, y in keypoints_c):
+                if not keypoints_c or all(x == -1 and y == -1 for x, y in keypoints_c):
                     continue
 
-                person_x = keypoints_c[0][0]
+                person_x = keypoints_c[0][0] * 1280  # Convert normalized x to pixel value
+                # end here
+
                 position = get_position(person_x, roi_data_list)
                 if position is None:
                     continue

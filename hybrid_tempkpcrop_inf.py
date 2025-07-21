@@ -12,7 +12,7 @@ import torch.nn as nn
 
 # ========= CONFIG =========
 YOLO_MODEL_PATH = "bestv7-2.pt"
-FUSION_MODEL_PATH = "rf_models/hybrid_tempkpcrop_model-1.pth"
+FUSION_MODEL_PATH = "rf_models/hybrid_tempkpcrop_norm-1.pth"
 JSON_PATH = "qiyas_multicam.camera_final.json"
 VIDEO_DIR = "C:/wajahat/hand_in_pocket/test_bench"
 # VIDEO_DIR = "F:/Wajahat/hand_in_pocket/qiyas_test"
@@ -170,20 +170,44 @@ for video_file in video_files:
                 feature_vector = []
                 for i, keypoint in enumerate(kp_tensor[:10]):
                     x, y, conf = keypoint[:3].cpu().numpy()
+                    # without normalized keypoint model
+                    # start here
+                    # if conf < 0.5:
+                    #     x, y = 0, 0
+
+                    # keypoints_c.append((x, y))
+                    # keypoints.extend([x, y])
+
+                    # cv2.circle(frame, (int(x), int(y)), 5, (0, 255, 0), -1)
+                    # cv2.circle(display_frame, (int(x), int(y)), 5, (0, 255, 0), -1)
+                    
+                # if len(keypoints_c) == 0 or all((x == 0 and y == 0) for x, y in keypoints_c):
+                #     continue
+
+                # # Estimate center X for desk matching
+                # person_x = keypoints_c[0][0]
+                # end here
+
+                    # for normalized keypoint model
+                    # start here
                     if conf < 0.5:
-                        x, y = 0, 0
+                        x, y = -1, -1
+
+                    x = x / 1280
+                    y = y / 720
 
                     keypoints_c.append((x, y))
                     keypoints.extend([x, y])
 
-                    cv2.circle(frame, (int(x), int(y)), 5, (0, 255, 0), -1)
-                    cv2.circle(display_frame, (int(x), int(y)), 5, (0, 255, 0), -1)
+                    cv2.circle(frame, (int(x*1280), int(y*720)), 5, (0, 255, 0), -1)
+                    cv2.circle(display_frame, (int(x*1280), int(y*720)), 5, (0, 255, 0), -1)
 
-                if len(keypoints_c) == 0 or all((x == 0 and y == 0) for x, y in keypoints_c):
+                if len(keypoints_c) == 0 or all((x == -1 and y == -1) for x, y in keypoints_c):
                     continue
 
                 # Estimate center X for desk matching
-                person_x = keypoints_c[0][0]
+                person_x = keypoints_c[0][0] * 1280 # Convert to pixel space
+                # end here
 
                 position = get_position(person_x, roi_data_list)
                 if position is None:
