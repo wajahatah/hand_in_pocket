@@ -1,3 +1,6 @@
+""" The script is used to annotate hand in pocket videos and generating a csv file with the keypoints and distances values. 
+It take camera number and video number as input and name the csv file to that number with camera number and video number as cN_vN."""
+
 from ultralytics import YOLO
 import os
 import cv2
@@ -41,7 +44,7 @@ def assign_roi_index(x):
 
 if __name__ == "__main__":
     model = YOLO("C:/wajahat/hand_in_pocket/bestv7-2.pt")
-    input_dir = "F:/Wajahat/hand_in_pocket/Hands_in_pocket_tp/tp21-4"
+    input_dir = "F:/Wajahat/looking_around_panic/may_7/Hands In Pocket/TP/"
     # video_name = "c2_v4"
     output_dir = "C:/wajahat/hand_in_pocket/dataset/training"
     json_path = "qiyas_multicam.camera_final.json"
@@ -89,6 +92,7 @@ if __name__ == "__main__":
 
         while True:
             camera_id_input = input("Enter camera ID for this video (e.g., camera_1): ")
+            video_num = input("Enter video name:")
             camera_id = f"camera_{camera_id_input}"
             camera_data = next((cam for cam in camera_config if cam["_id"] == camera_id), None)
             if camera_data:
@@ -106,7 +110,7 @@ if __name__ == "__main__":
             (4, 5), (5, 6),
             (7, 8), (8, 9)
         ]
-
+        video_name = f"c{camera_id_input}_v{video_num}"
         csv_filename = os.path.join(output_dir, video_name + ".csv")
 
         keypoint_headers = [f"kp_{i}_x" for i in range(10)] + [f"kp_{i}_y" for i in range(10)] + [f"kp_{i}_conf" for i in range(10)]
