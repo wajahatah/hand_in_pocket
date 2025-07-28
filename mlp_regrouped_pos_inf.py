@@ -12,7 +12,7 @@ import statistics as stats
 
 # ========== MLP Model ==========
 class MLP(nn.Module):
-    def __init__(self, input_size=105, hidden_size=64):
+    def __init__(self, input_size=104, hidden_size=64):
         super(MLP, self).__init__()
         # self.net = nn.Sequential(
         #     nn.Linear(104, hidden_size),
@@ -99,31 +99,37 @@ def load_mlp_model(weights_path, device):
 
 
 mlp_times = []
+video_num = 0
 
 # ========== Main Inference ==========
 if __name__ == "__main__":
-    kp_model = YOLO("C:/wajahat/hand_in_pocket/bestv7-2.pt")
+    kp_model = YOLO("C:/wajahat/hand_in_pocket/bestv8-1.pt")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     mlp_model = load_mlp_model("rf_models/mlp_temp_norm_regrouped_pos_gen-c4.pt", device)
 
     # input_dir = "C:/Users/LAMBDA THETA/Videos"
-    # input_dir = "C:/wajahat/hand_in_pocket/test_bench"
-    input_dir = "F:/Wajahat/hand_in_pocket/qiyas_test"
+    # input_dir = "C:/Users/LAMBDA THETA/Downloads/july_27/fp/Hands In Pocket"
+    # input_dir = "F:/Wajahat/looking_around_panic/may_8/Hands In Pocket1/TP"
     json_path = "qiyas_multicam.camera_final.json"
     WINDOW_SIZE = 5
+    frame_num = 0
 
-    video_files = [f for f in os.listdir(input_dir) if f.endswith('.mp4')]
-    if not video_files:
-        print("No videos found.")
-        exit()
+    # video_files = [f for f in os.listdir(input_dir) if f.endswith('.mp4')]
+    # if not video_files:
+    #     print("No videos found.")
+    #     exit()
 
-    for video_file in video_files:
-        video_path = os.path.join(input_dir, video_file)
+    # for video_file in video_files:
+        # video_path = os.path.join(input_dir, video_file)
+    while True:
+        video_file = video_path = "C:/Users/LAMBDA THETA/Downloads/july_27/fp/Hands In Pocket/1753613382.466142.mp4"
         print(f"Processing: {video_path}")
         cap = cv2.VideoCapture(video_path)
         if not cap.isOpened():
             print("Error loading video.")
             continue
+
+        video_file_name = video_file
 
         # Get camera ID
         ret, frame = cap.read()
@@ -166,17 +172,21 @@ if __name__ == "__main__":
             frame = cv2.resize(frame, (1280, 720))
             results = kp_model(frame)
 
+            batch_input_vector = []
             for result in results:
                 if not hasattr(result, 'keypoints') or result.keypoints is None:
                     continue
 
                 keypoints_tensor = result.keypoints.data
+                frame_num += 1
+
                 for person_idx, kp_tensor in enumerate(keypoints_tensor):
                     keypoints = []
                     feature_dict = {}
 
                     for i, keypoint in enumerate(kp_tensor):
                         x, y, conf = keypoint[:3].cpu().numpy()
+                        print("type of x:", type(x))
                         cv2.circle(frame, (int(x), int(y)), 5, (0, 255, 0), -1)
                         if conf < 0.5:
                             x, y = -1, -1
@@ -199,7 +209,11 @@ if __name__ == "__main__":
                     feature_dict['position'] = position
                     if position not in sliding_window:
                         sliding_window[position] = deque(maxlen=WINDOW_SIZE)
-                    sliding_window[position].append(feature_dict)
+                    f = sliding_window[position].append(feature_dict)
+
+                    # print(f"feature_dict: {feature_dict}")
+                    # print(f"array: {f}")
+                    
 
                     if len(sliding_window[position]) == WINDOW_SIZE:
                         flat_feature = {}
@@ -222,58 +236,91 @@ if __name__ == "__main__":
                         # ordered_columns += [f"position_t{t}" for t in range(WINDOW_SIZE)]
                         
                         # for single frame inference
-                        # input_tensor = torch.tensor([[flat_feature[col] for col in ordered_columns]], dtype=torch.float32).to(device)
+                        input_tensor = torch.tensor([[flat_feature[col] for col in ordered_columns]], dtype=torch.float32).to(device)
                         # print(f"Position: {position}")
-                        # print(input_tensor)
+                        print(f"Position: {roi_data['desk']}")
+                        print(f"frame num: {frame_num}")
+                        print(f"input_tensor: {input_tensor}, shape: {input_tensor.shape}")
 
-                        # with torch.no_grad():
-                        #     start = time.time()
-                        #     # print(f"start_time: {start}")
-                        #     prob = mlp_model(input_tensor).item()
-                        #     end = time.time()
-                        #     # print(f"end_time: {end}")
-                        #     mlp_times.append(end - start)
-                        #     # print(f"Prediction time: {(end - start)*1000:.4f} seconds")
-                        #     print(f"[Person {person_idx} | Pos {position}] Start: {start:.6f}, End: {end:.6f}, Time: {(end - start)*1000:.4f} ms")
-                        #     prediction = 1 if prob >= 0.5 else 0
+                        # frame_num += 1
+                        with torch.no_grad():
+                            start = time.time()
+                            # print(f"start_time: {start}")
+                            prob = mlp_model(input_tensor)
+                            print(f"prob: {prob}")
+                            end = time.time()
+                            # print(f"end_time: {end}")
+                            mlp_times.append(end - start)
+                            # print(f"Prediction time: {(end - start)*1000:.4f} seconds")
+                            # print(f"[Person {person_idx} | Pos {position}] Start: {start:.6f}, End: {end:.6f}, Time: {(end - start)*1000:.4f} ms")
+                            prediction = 1 if prob >= 0.5 else 0
+
+                            if prediction == 1:
+                                if video_file == video_file_name:
+                                    with open("prediction.csv", "a", newline='') as f:
+                                        f.write(f"{video_file}, {prediction}, Hand in Pocket \n")
+                                    video_file_name = f"{video_file}_done"
 
 
                         # for batch inference of mlp model
                         # start here 
-                        input_vector = [flat_feature[col] for col in ordered_columns]
+                        # input_vector = [flat_feature[col] for col in ordered_columns]
 
-                        batch_tensor = torch.tensor([input_vector for _ in range(10)], dtype=torch.float32).to(device)
-                        print("##################################################")
+                        # batch_tensor = torch.tensor([input_vector for _ in range(10)], dtype=torch.float32).to(device)
+                        # batch_input_vector.append((person_idx, position, person_x, roi_data, input_vector))
+                        # print("##################################################")
                         # print(f"Batch Tensor: {batch_tensor}")
 
-                        with torch.no_grad():
-                            start = time.time()
-                            probs = mlp_model(batch_tensor)
-                            end = time.time()
-                            mlp_times.append(end - start)
-                            print(f"[Person {person_idx} | Pos {position}] Start: {start:.6f}, End: {end:.6f}, Time: {(end - start)*1000:.4f} ms")
-                            
-                            for i in range(10):
-                                prob = probs[i].item()
-                                prediction = 1 if prob >= 0.5 else 0
-                                label = "Hand in Pocket" if prediction else "No Hand in Pocket"
-                                color = (0, 0, 255) if prediction else (0, 255, 0)
+                        # if len(batch_input_vector) >1:
+                            # batch_tensor = torch.tensor( 
+                            #     [vec for (_,_,_,_, vec) in batch_input_vector],
+                            #     dtype= torch.float32).to('cuda')
+                            # import random
+                            # input_vector = [vec for (_,_,_,_,vec) in batch_input_vector]
 
-                                cv2.putText(frame, f"{label} ({prob:.2f})", (int(person_x), 50 + person_idx * 30),
-                                            cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
-                                cv2.putText(frame, f"Desk: {roi_data['desk']}, Pos: {roi_data['position']}",
-                                            (int(person_x), 100 + person_idx * 30),
-                                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (130, 180, 0), 2)
+                    
+
+                        # batch_tensor = torch.tensor([input_vector] * 32, dtype=torch.float32).to(device)    
+                        # print(f"batch tensor: {batch_tensor}")                        
+
+                        # with torch.no_grad():
+                        #     start = time.time()
+                        #     probs = mlp_model(batch_tensor)
+                        #     print(f"probs: {probs}")
+                        #     end = time.time()
+                        #     mlp_times.append(end - start)
+                        #     # print(f"[Person {person_idx} | Pos {position}] Start: {start:.6f}, End: {end:.6f}, Time: {(end - start)*1000:.4f} ms")
+                        #     print(f"[MLP] Batch inference on {position} persons. Time: {(end - start) * 1000:.3f} ms")
+
+                        
+                        # for i in range(10):
+                            # for i, (person_idx, position, person_x, roi_data, _) in enumerate(batch_input_vector):
+                            # for i, prob_tensor in enumerate(probs):
+                            #     # prob = probs[i].item()
+                            #     prob = prob_tensor.item()
+                                
+                            #     prediction = 1 if prob >= 0.5 else 0
+                            #     print(f"prectiction: {prediction}")
+                            #     label = "Hand in Pocket" if prediction else "No Hand in Pocket"
+                            #     color = (0, 0, 255) if prediction else (0, 255, 0)
+
+                            #     cv2.putText(frame, f"{label} ({prob:.2f})", (int(person_x), 50 + person_idx * 30),
+                            #                 cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
+                            #     cv2.putText(frame, f"Desk: {roi_data['desk']}, Pos: {roi_data['position']}",
+                            #                 (int(person_x), 100 + person_idx * 30),
+                            #                 cv2.FONT_HERSHEY_SIMPLEX, 0.6, (130, 180, 0), 2)
+                                
+            # batch_input_vector = []
                         # end here
 
                         # uncomment below lines for single frame inference
-                        # label = "Hand in Pocket" if prediction else "No Hand in Pocket"
-                        # color = (0, 0, 255) if prediction else (0, 255, 0)
+                        label = "Hand in Pocket" if prediction else "No Hand in Pocket"
+                        color = (0, 0, 255) if prediction else (0, 255, 0)
                         # cv2.putText(frame, f"{label} ({prob:.2f})", (int(person_x), 50 + person_idx * 30),
-                        #             cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
-                        # cv2.putText(frame, f"Desk: {roi_data['desk']}, Pos: {roi_data['position']}",
-                        #             (int(person_x), 100 + person_idx * 30),
-                        #             cv2.FONT_HERSHEY_SIMPLEX, 0.6, (130, 180, 0), 2)
+                                    # cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
+                        cv2.putText(frame, f"Desk: {roi_data['desk']}, Pos: {roi_data['position']}",
+                                    (int(person_x), 100 + person_idx * 30),
+                                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (130, 180, 0), 2)
                         
 
                         # uncomment below lines to stop the video on prediction 
@@ -288,6 +335,8 @@ if __name__ == "__main__":
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
 
+        video_num += 1
+        print(f"video: {video_num}")
         cap.release()
 
 
