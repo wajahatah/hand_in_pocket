@@ -12,6 +12,9 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 # Global variable to hold loaded ROI data
 roi_data_list = []
+frame_count = 0
+saved_TP_frames = set()
+
 
 def draw_lines(frame, keypoints, connections):
     for start_idx, end_idx in connections:
@@ -44,7 +47,7 @@ def assign_roi_index(x):
 
 if __name__ == "__main__":
     model = YOLO("C:/wajahat/hand_in_pocket/bestv7-2.pt")
-    input_dir = "F:/Wajahat/looking_around_panic/may_7/Hands In Pocket/TP/"
+    input_dir = "C:/Users/LAMBDA THETA/Downloads/july_27"
     # video_name = "c2_v4"
     output_dir = "C:/wajahat/hand_in_pocket/dataset/training"
     json_path = "qiyas_multicam.camera_final.json"
@@ -131,8 +134,14 @@ if __name__ == "__main__":
                 break
 
             frame = cv2.resize(frame, (1280, 720))
+            save_frame = frame.copy()
+            # frame_count += 1
             results = model(frame)
             person_info_list = []
+            frame_dir_TP = os.path.join(output_dir, video_name, "TP")
+            frame_dir_FN = os.path.join(output_dir, video_name, "FN")
+            os.makedirs(frame_dir_TP, exist_ok=True)
+            os.makedirs(frame_dir_FN, exist_ok=True)
 
             for result in results:
                 keypoints = result.keypoints
@@ -226,16 +235,19 @@ if __name__ == "__main__":
         max_persons = max(len(info) for _, info in all_frames_data)
         print(max_persons)
 
-
+        frame_hand_labels = {}
         for person_idx in range(max_persons):
         # for roi_idx in range(max_persons):
             print(f"\n\u25ba Now annotating for Person #{roi_idx} of video {video_name}across all frames.")
+
+            # saved_TP_frames = set()
             for frame_num, (frame, person_list) in enumerate(all_frames_data):
                 if person_idx >= len(person_list):
                     continue
                 row_data = person_list[person_idx]
                 # row_data = person_list[roi_idx]
                 frame_to_show = frame.copy()
+                save_frame = frame_to_show.copy()
 
                 cv2.imshow("frame", frame_to_show)
                 # cv2.imwrite( os.path.join(frames_dir, f"frame_{frame_num}.jpg", frame_to_show))
@@ -254,6 +266,23 @@ if __name__ == "__main__":
 
                 row_data["hand_in_pocket"] = hand_in_pocket
                 csv_writer.writerow(row_data)
+        
+        for frame_num, (_, person_list) in enumerate(all_frames_data):
+            frame_name = f"frame_{frame_num:04d}.jpg"
+            frame_copy = all_frames_data[frame_num][0]
+            frame_has_tp = any(str(p["hand_in_pocket"]) == "1" for p in person_list)
+
+            if frame_has_tp:
+                cv2.imwrite(os.path.join(frame_dir_TP, frame_name), frame_copy)
+            else:
+                cv2.imwrite(os.path.join(frame_dir_FN, frame_name), frame_copy)
+                # frame_has_tp = any(row("hand_in_pocket") == "1" for row in current_frame_data)
+                # if hand_in_pocket == "1":
+                #     cv2.imwrite(os.path.join(frame_dir_TP, f"frame_{frame_num:04d}.jpg"), save_frame)
+                #     saved_TP_frames.add(frame_num)
+                # else:
+                #     if frame_num not in saved_TP_frames: 
+                #         cv2.imwrite(os.path.join(frame_dir_FN, f"frame_{frame_num:04d}.jpg"), save_frame)
 
         print(f"Annotation completed and saved {video_name} CSV.")
 
