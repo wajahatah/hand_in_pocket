@@ -13,7 +13,7 @@ def parse_filename(filename):
 
 def assign_desk(x, y, roi_data):
     for roi_id, data in roi_data.items():
-        if data["xmin"] <= x <= data["xmax"] and data["ymin"] <= y <= data["ymax"]:
+        if data["xmin"] <= x <= data["xmax"]:
             return roi_id, data
     return None, None
 
@@ -69,6 +69,7 @@ def process_temporal_sequences(image_dict, model, roi_data, output_csv):
                     images = []
                     for _, _, _, path in window:
                         img = cv2.imread(path)
+                        # print(f"Processing {path}")
                         if img is None:
                             valid_window = False
                             break
@@ -77,20 +78,32 @@ def process_temporal_sequences(image_dict, model, roi_data, output_csv):
                         continue
 
                     for t, img in enumerate(images):
-                        results = model(img, verbose=False)
+                        results = model(img)
                         keypoints_data = results[0].keypoints.data.cpu().numpy()
 
                         for person_kps in keypoints_data:
-                            x, y, conf = person_kps[0][0], person_kps[0][1], person_kps[0][2]
-                            if conf < 0.5:
-                                x , y = 0, 0
+                            # x, y, conf = person_kps[0][0], person_kps[0][1], person_kps[0][2]
+                            for kp_idx, kp in enumerate(person_kps):
+                                x,y,conf = kp
+                                # if conf > 0.5:
+                                    # cv2.circle(img, (int(x), int(y)), 5, (0, 255, 0), -1)
+                                # else:
+                                #     x , y = 0, 0
+
+                            # cv2.imshow("img",img)
+                            # if cv2.waitKey(0) & 0xFF == ord('q'):
+                            #     cv2.destroyAllWindows()
+                                # exit()
                             desk_id, desk_info = assign_desk(x, y, roi_data.get(window[0][0], {}))
+                                
                             if desk_id is None:
                                 continue
                             key = f"{desk_id}"
                             all_keypoints[key].append(person_kps)
+                            # print(f"keypoiints {all_keypoints}, length {len(all_keypoints[key])}")
                             if key not in desk_data:
                                 desk_data[key] = desk_info
+                        
 
                     for desk_id, kp_list in all_keypoints.items():
                         if len(kp_list) != 5:
@@ -107,19 +120,27 @@ def process_temporal_sequences(image_dict, model, roi_data, output_csv):
                         }
                         for t, kps in enumerate(kp_list):
                             for i in range(10):
-                                row[f"kp_{i}_x_t{t}"] = float(kps[i][0])
-                                row[f"kp_{i}_y_t{t}"] = float(kps[i][1])
-                                # row[f"kp_{i}_conf_t{t}"] = float(kps[i][2])
+                                x,y,conf = kps[i]
+                                if conf > 0.5:
+                                    row[f"kp_{i}_x_t{t}"] = float(kps[i][0])
+                                    row[f"kp_{i}_y_t{t}"] = float(kps[i][1])
+                                    # row[f"kp_{i}_conf_t{t}"] = float(kps[i][2])
+                                else:
+                                    row[f"kp_{i}_x_t{t}"] = 0.0
+                                    row[f"kp_{i}_y_t{t}"] = 0.0
+                            # row[f"kp_{i}_conf_t{t}"] = 0.0
                         row["position_a"], row["position_b"], row["position_c"], row["position_d"] = plist
-                        row["hand_in_pocket"] = 0  # manual or default
+                        row["hand_in_pocket"] = 0  # manual or default4
+
+                        # print(f"row: {row}")
 
                         writer.writerow(row)
 
 if __name__ == "__main__":
     model_path = "bestv7-2.pt"
-    image_folder = "F:/Wajahat/hand_in_pocket/frames/without_kp/no_hp"
+    image_folder = "C:/wajahat/hand_in_pocket/dataset/without_kp/no_hp"
     json_path = "qiyas_multicam.camera_final.json"
-    output_csv = "F:/Wajahat/hand_in_pocket/frames/without_kp/n0_hp_annotations.csv"
+    output_csv = "C:/wajahat/hand_in_pocket/dataset/without_kp/no_hp_annotations2.csv"
 
     model = YOLO(model_path)
     roi_data = load_roi_data(json_path)
