@@ -14,16 +14,16 @@ import statistics as stats
 class MLP(nn.Module):
     def __init__(self, input_size=104, hidden_size=64):
         super(MLP, self).__init__()
-        # self.net = nn.Sequential(
-        #     nn.Linear(104, hidden_size),
-        #     nn.ReLU(),
-        #     nn.Dropout(0.3),
-        #     nn.Linear(hidden_size, hidden_size // 2),
-        #     nn.ReLU(),
-        #     nn.Dropout(0.3),
-        #     nn.Linear(hidden_size // 2, 1),
-        #     nn.Sigmoid()
-        # )
+        self.net = nn.Sequential(
+            nn.Linear(104, hidden_size),
+            nn.ReLU(),
+            nn.Dropout(0.3),
+            nn.Linear(hidden_size, hidden_size // 2),
+            nn.ReLU(),
+            nn.Dropout(0.3),
+            nn.Linear(hidden_size // 2, 1),
+            nn.Sigmoid()
+        )
 
         # # for c1 model architecture
         # self.net = nn.Sequential(
@@ -70,14 +70,14 @@ class MLP(nn.Module):
         # )
 
         # for c4 model architecture
-        self.net = nn.Sequential(
-            nn.Linear(104, 64),
-            nn.ReLU(),
-            nn.Linear(64, 32),
-            nn.ReLU(),
-            nn.Linear(32, 1),
-            nn.Sigmoid()
-        )
+        # self.net = nn.Sequential(
+        #     nn.Linear(104, 64),
+        #     nn.ReLU(),
+        #     nn.Linear(64, 32),
+        #     nn.ReLU(),
+        #     nn.Linear(32, 1),
+        #     nn.Sigmoid()
+        # )
 
     def forward(self, x):
         return self.net(x)
@@ -103,26 +103,26 @@ video_num = 0
 
 # ========== Main Inference ==========
 if __name__ == "__main__":
-    kp_model = YOLO("C:/wajahat/hand_in_pocket/bestv8-1.pt")
+    kp_model = YOLO("C:/wajahat/hand_in_pocket/bestv7-2.pt")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    mlp_model = load_mlp_model("rf_models/mlp_temp_norm_regrouped_pos_gen-c4.pt", device)
+    mlp_model = load_mlp_model("rf_models/mlp_temp_norm_regrouped_pos_gen-2-c1.pt", device)
 
     # input_dir = "C:/Users/LAMBDA THETA/Videos"
-    # input_dir = "C:/Users/LAMBDA THETA/Downloads/july_27/fp/Hands In Pocket"
+    input_dir = "C:/wajahat/hand_in_pocket/test_bench"
     # input_dir = "F:/Wajahat/looking_around_panic/may_8/Hands In Pocket1/TP"
     json_path = "qiyas_multicam.camera_final.json"
     WINDOW_SIZE = 5
     frame_num = 0
 
-    # video_files = [f for f in os.listdir(input_dir) if f.endswith('.mp4')]
-    # if not video_files:
-    #     print("No videos found.")
-    #     exit()
+    video_files = [f for f in os.listdir(input_dir) if f.endswith('.mp4')]
+    if not video_files:
+        print("No videos found.")
+        exit()
 
-    # for video_file in video_files:
-        # video_path = os.path.join(input_dir, video_file)
-    while True:
-        video_file = video_path = "C:/Users/LAMBDA THETA/Downloads/july_27/fp/Hands In Pocket/1753613382.466142.mp4"
+    for video_file in video_files:
+        video_path = os.path.join(input_dir, video_file)
+    # while True:
+    #     video_file = video_path = "C:/Users/LAMBDA THETA/Downloads/july_27/fp/Hands In Pocket/1753613382.466142.mp4"
         print(f"Processing: {video_path}")
         cap = cv2.VideoCapture(video_path)
         if not cap.isOpened():
@@ -186,8 +186,9 @@ if __name__ == "__main__":
 
                     for i, keypoint in enumerate(kp_tensor):
                         x, y, conf = keypoint[:3].cpu().numpy()
-                        print("type of x:", type(x))
+                        # print("type of x:", type(x))
                         cv2.circle(frame, (int(x), int(y)), 5, (0, 255, 0), -1)
+                        # for normalized keypoints values inference
                         if conf < 0.5:
                             x, y = -1, -1
                         else:
@@ -201,6 +202,19 @@ if __name__ == "__main__":
                         continue
 
                     person_x = keypoints[0][0] * 1280
+
+                        #for non normalized keypoints values inference
+                    #     if conf < 0.5:
+                    #         x, y = 0, 0
+                        
+                    #     feature_dict[f"kp_{i}_x"] = x
+                    #     feature_dict[f"kp_{i}_y"] = y
+                    #     keypoints.append((x, y))
+
+                    # if len(keypoints) == 0 or all((x == 0 and y == 0) for x, y in keypoints):
+                    #     continue
+
+                    # person_x = keypoints[0][0]
                     position = assign_roi_index(person_x)
                     roi_data = roi_lookup.get(position)
                     if not roi_data:
@@ -238,28 +252,37 @@ if __name__ == "__main__":
                         # for single frame inference
                         input_tensor = torch.tensor([[flat_feature[col] for col in ordered_columns]], dtype=torch.float32).to(device)
                         # print(f"Position: {position}")
-                        print(f"Position: {roi_data['desk']}")
-                        print(f"frame num: {frame_num}")
-                        print(f"input_tensor: {input_tensor}, shape: {input_tensor.shape}")
+                        # print(f"Position: {roi_data['desk']}")
+                        # print(f"frame num: {frame_num}")
+                        # print(f"input_tensor: {input_tensor}, shape: {input_tensor.shape}")
 
                         # frame_num += 1
                         with torch.no_grad():
-                            start = time.time()
+                            # start = time.time()
                             # print(f"start_time: {start}")
-                            prob = mlp_model(input_tensor)
-                            print(f"prob: {prob}")
-                            end = time.time()
+                            prob = mlp_model(input_tensor).item()
+                            # print(f"prob: {prob}")
+                            # end = time.time()
                             # print(f"end_time: {end}")
-                            mlp_times.append(end - start)
+                            # mlp_times.append(end - start)
                             # print(f"Prediction time: {(end - start)*1000:.4f} seconds")
                             # print(f"[Person {person_idx} | Pos {position}] Start: {start:.6f}, End: {end:.6f}, Time: {(end - start)*1000:.4f} ms")
                             prediction = 1 if prob >= 0.5 else 0
 
-                            if prediction == 1:
-                                if video_file == video_file_name:
-                                    with open("prediction.csv", "a", newline='') as f:
-                                        f.write(f"{video_file}, {prediction}, Hand in Pocket \n")
-                                    video_file_name = f"{video_file}_done"
+                            # uncomment below lines for single frame inference
+                        label = "Hand in Pocket" if prediction else "No Hand in Pocket"
+                        color = (0, 0, 255) if prediction else (0, 255, 0)
+                        cv2.putText(frame, f"{label} ({prob:.2f})", (int(person_x), 50 + person_idx * 30),
+                                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
+                        cv2.putText(frame, f"Desk: {roi_data['desk']}, Pos: {roi_data['position']}",
+                                    (int(person_x), 100 + person_idx * 30),
+                                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (130, 180, 0), 2)
+                            
+                            # if prediction == 1:
+                            #     if video_file == video_file_name:
+                            #         with open("prediction.csv", "a", newline='') as f:
+                            #             f.write(f"{video_file}, {prediction}, Hand in Pocket \n")
+                            #         video_file_name = f"{video_file}_done"
 
 
                         # for batch inference of mlp model
@@ -313,14 +336,6 @@ if __name__ == "__main__":
             # batch_input_vector = []
                         # end here
 
-                        # uncomment below lines for single frame inference
-                        label = "Hand in Pocket" if prediction else "No Hand in Pocket"
-                        color = (0, 0, 255) if prediction else (0, 255, 0)
-                        # cv2.putText(frame, f"{label} ({prob:.2f})", (int(person_x), 50 + person_idx * 30),
-                                    # cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
-                        cv2.putText(frame, f"Desk: {roi_data['desk']}, Pos: {roi_data['position']}",
-                                    (int(person_x), 100 + person_idx * 30),
-                                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (130, 180, 0), 2)
                         
 
                         # uncomment below lines to stop the video on prediction 
