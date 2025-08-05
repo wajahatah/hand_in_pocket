@@ -16,10 +16,10 @@ class MLP(nn.Module):
         self.net = nn.Sequential(
             nn.Linear(104, hidden_size),
             nn.ReLU(),
-            nn.Dropout(0.3),
+            # nn.Dropout(0.3),
             nn.Linear(hidden_size, hidden_size // 2),
             nn.ReLU(),
-            nn.Dropout(0.3),
+            # nn.Dropout(0.3),
             nn.Linear(hidden_size // 2, 1),
             nn.Sigmoid()
         )
@@ -49,12 +49,14 @@ video_num = 0
 if __name__ == "__main__":
     kp_model = YOLO("C:/wajahat/hand_in_pocket/bestv7-2.pt")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    mlp_model = load_mlp_model("rf_models/mlp_temp_norm_regrouped_pos_gen-2-c1.pt", device)
+    mlp_model_name = "mlp_temp_norm_regrouped_pos_gen-2-c4"
+    mlp_model = load_mlp_model(f"rf_models/{mlp_model_name}.pt", device)
 
     input_dir = "C:/wajahat/hand_in_pocket/test_bench"
     json_path = "qiyas_multicam.camera_final.json"
     WINDOW_SIZE = 5
-    SKIP_RATE = 2
+    waitkey = 200
+    SKIP_RATE = 1
     ALERT_THRESHOLD = 6
     frame_idx = 0
     prediction_streak = {}
@@ -134,6 +136,8 @@ if __name__ == "__main__":
                     for i, keypoint in enumerate(kp_tensor):
                         x, y, conf = keypoint[:3].cpu().numpy()
                         cv2.circle(frame, (int(x), int(y)), 5, (0, 255, 0), -1)
+
+                        # for normalized keypoints 
                         if conf < 0.5:
                             x, y = -1, -1
                         else:
@@ -147,6 +151,18 @@ if __name__ == "__main__":
                         continue
 
                     person_x = keypoints[0][0] * 1280
+
+                        # for non-normalized keypoints
+                    #     if conf < 0.5:
+                    #         x,y = 0, 0
+                    #     feature_dict[f"kp_{i}_x"] = x
+                    #     feature_dict[f"kp_{i}_y"] = y
+                    #     keypoints.append((x, y))
+                    
+                    # if len(keypoints) == 0 or all((x == 0 and y == 0) for x,y in keypoints):
+                    #     continue
+
+                    # person_x = keypoints[0][0]
                     position = assign_roi_index(person_x)
                     roi_data = roi_lookup.get(position)
                     if not roi_data:
@@ -228,7 +244,7 @@ if __name__ == "__main__":
                     prediction_streak[key] = 0
 
             cv2.imshow("MLP Inference", frame)
-            if cv2.waitKey(1) & 0xFF == ord('q'):
+            if cv2.waitKey(waitkey) & 0xFF == ord('q'):
                 break
 
         video_num += 1
@@ -236,7 +252,10 @@ if __name__ == "__main__":
 
         # Save CSV file
         csv_name = os.path.splitext(video_file)[0] + ".csv"
-        csv_path = os.path.join(input_dir, csv_name)
+        output_folder = f"C:/wajahat/hand_in_pocket/dataset/results_csv/{mlp_model_name}"
+        os.makedirs(output_folder, exist_ok=True)
+        # print(f"mlp model: {output_folder}")
+        csv_path = os.path.join(output_folder, csv_name)
         with open(csv_path, 'w', newline='') as f:
             # writer = csv.DictWriter(f, fieldnames=["frame", "desk", "mperson_idx", "prediction", "probability"])
             keypoint_cols = [f"kp_{i}_{axis}_t{t}" for i in range(10) for axis in ['x','y'] for t in range(WINDOW_SIZE)]
@@ -245,18 +264,18 @@ if __name__ == "__main__":
             writer.writeheader()
             writer.writerows(csv_output)
 
-    if mlp_times:
-        avg_time = sum(mlp_times) / len(mlp_times)
-        median_time = stats.median(mlp_times)
-        nonzero = [t for t in mlp_times if t > 0]
-        if nonzero:
-            try:
-                mode_time = stats.mode(nonzero)
-            except stats.StatisticsError:
-                mode_time = "No unique mode"
-        print(f"[MLP] Average inference time: {avg_time*1000:.3f} ms over {len(mlp_times)} samples")
-        print(f"Max: {max(mlp_times)*1000:.3f} ms, Min: {min(mlp_times)*1000:.3f} ms")
-        print(f"Median : {median_time * 1000:.3f} ms")
-        print(f"Mode   : {mode_time if isinstance(mode_time, str) else f'{mode_time * 1000:.3f} ms'}")
+    # if mlp_times:
+    #     avg_time = sum(mlp_times) / len(mlp_times)
+    #     median_time = stats.median(mlp_times)
+    #     nonzero = [t for t in mlp_times if t > 0]
+    #     if nonzero:
+    #         try:
+    #             mode_time = stats.mode(nonzero)
+    #         except stats.StatisticsError:
+    #             mode_time = "No unique mode"
+    #     print(f"[MLP] Average inference time: {avg_time*1000:.3f} ms over {len(mlp_times)} samples")
+    #     print(f"Max: {max(mlp_times)*1000:.3f} ms, Min: {min(mlp_times)*1000:.3f} ms")
+    #     print(f"Median : {median_time * 1000:.3f} ms")
+    #     print(f"Mode   : {mode_time if isinstance(mode_time, str) else f'{mode_time * 1000:.3f} ms'}")
 
     cv2.destroyAllWindows()
