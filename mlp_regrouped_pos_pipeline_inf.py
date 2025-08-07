@@ -16,10 +16,10 @@ class MLP(nn.Module):
         self.net = nn.Sequential(
             nn.Linear(104, hidden_size),
             nn.ReLU(),
-            # nn.Dropout(0.3),
+            nn.Dropout(0.3),
             nn.Linear(hidden_size, hidden_size // 2),
             nn.ReLU(),
-            # nn.Dropout(0.3),
+            nn.Dropout(0.3),
             nn.Linear(hidden_size // 2, 1),
             nn.Sigmoid()
         )
@@ -47,16 +47,16 @@ video_num = 0
 
 # ========== Main Inference ==========
 if __name__ == "__main__":
-    kp_model = YOLO("C:/wajahat/hand_in_pocket/bestv7-2.pt")
+    kp_model = YOLO("C:/wajahat/hand_in_pocket/bestv7-2.pt", verbose=False)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    mlp_model_name = "mlp_temp_norm_regrouped_pos_gen-2-c4"
+    mlp_model_name = "mlp_temp_norm_regrouped_pos_gen_augmented_round-c0"
     mlp_model = load_mlp_model(f"rf_models/{mlp_model_name}.pt", device)
 
     input_dir = "C:/wajahat/hand_in_pocket/test_bench"
     json_path = "qiyas_multicam.camera_final.json"
     WINDOW_SIZE = 5
-    waitkey = 200
-    SKIP_RATE = 1
+    waitkey = 0
+    SKIP_RATE = 2
     ALERT_THRESHOLD = 6
     frame_idx = 0
     prediction_streak = {}
@@ -133,19 +133,26 @@ if __name__ == "__main__":
                     keypoints = []
                     feature_dict = {}
 
+                    # print(f"kp tensor: {kp_tensor}")
+
                     for i, keypoint in enumerate(kp_tensor):
                         x, y, conf = keypoint[:3].cpu().numpy()
-                        cv2.circle(frame, (int(x), int(y)), 5, (0, 255, 0), -1)
+                        x = x.astype(int)
+                        y = y.astype(int)
+                        print(f"frame: {frame_number}, x: {x}, y: {y}, conf: {conf}")
+                        if conf > 0.5:
+                            cv2.circle(frame, (int(x), int(y)), 5, (0, 255, 0), -1)
 
                         # for normalized keypoints 
                         if conf < 0.5:
                             x, y = -1, -1
                         else:
-                            x = x / 1280
-                            y = y / 720
+                            x = (x / 1280).round(3)
+                            y = (y / 720).round(3)
                         feature_dict[f"kp_{i}_x"] = x
                         feature_dict[f"kp_{i}_y"] = y
                         keypoints.append((x, y))
+                        # print(f" keypoints: {keypoints}")
 
                     if len(keypoints) == 0 or all((x == -1 and y == -1) for x, y in keypoints):
                         continue
@@ -158,6 +165,7 @@ if __name__ == "__main__":
                     #     feature_dict[f"kp_{i}_x"] = x
                     #     feature_dict[f"kp_{i}_y"] = y
                     #     keypoints.append((x, y))
+                    #     # print(f" keypoints: {keypoints}")
                     
                     # if len(keypoints) == 0 or all((x == 0 and y == 0) for x,y in keypoints):
                     #     continue
@@ -252,7 +260,7 @@ if __name__ == "__main__":
 
         # Save CSV file
         csv_name = os.path.splitext(video_file)[0] + ".csv"
-        output_folder = f"C:/wajahat/hand_in_pocket/dataset/results_csv/{mlp_model_name}"
+        output_folder = f"C:/wajahat/hand_in_pocket/dataset/results_csv/{mlp_model_name}0"
         os.makedirs(output_folder, exist_ok=True)
         # print(f"mlp model: {output_folder}")
         csv_path = os.path.join(output_folder, csv_name)

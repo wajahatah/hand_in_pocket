@@ -11,16 +11,18 @@ INPUT_SIZE = 104
 HIDDEN_SIZE = 128
 BATCH_SIZE = 32
 EPOCHS = 300
-PATIENCE = 10
+PATIENCE = 5
 # MODEL_PATH = "mlp_hand_in_pocket.pt"
-model_name = "mlp_temp_norm_regrouped_pos_gen-c4"
+model_name = "mlp_temp_regrouped_pos_gen_round-c0"
 label_column = 'hand_in_pocket'  
 
 # -------- Load Dataset --------
-csv_name = 'temp_kp_l1_v2_norm_sorted_pos_gen.csv' 
-df = pd.read_csv(f'C:/wajahat/hand_in_pocket/dataset/split_keypoint/combined/{csv_name}')  # Replace with your actual path
+csv_name = 'new_combine_round.csv' 
+# "C:/wajahat/hand_in_pocket/dataset/without_kp/
+df = pd.read_csv(f'C:/wajahat/hand_in_pocket/dataset/without_kp/{csv_name}')  # Replace with your actual path
 
-df = df.drop(columns=['source_file']) 
+df = df.drop(columns=['camera', 'video', 'frame', 'desk']) 
+# df = df.drop(columns=['source_file']) 
 
 # Handle empty strings as missing
 df.replace(r'^\s*$', np.nan, regex=True, inplace=True)
@@ -50,10 +52,10 @@ class MLP(nn.Module):
             # nn.Linear(128, 64),
             nn.Linear(104, 64),
             nn.ReLU(),
-            # nn.Dropout(0.3),
+            nn.Dropout(0.3),
             nn.Linear(64, 32),
             nn.ReLU(),
-            # nn.Dropout(0.3),
+            nn.Dropout(0.3),
             nn.Linear(32, 1),
             # nn.ReLU(),
             # nn.Dropout(0.3),
