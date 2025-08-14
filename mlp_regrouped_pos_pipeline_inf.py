@@ -14,7 +14,7 @@ class MLP(nn.Module):
     def __init__(self, input_size=104, hidden_size=64):
         super(MLP, self).__init__()
         self.net = nn.Sequential(
-            nn.Linear(104, hidden_size),
+            nn.Linear(64, hidden_size),
             nn.ReLU(),
             nn.Dropout(0.3),
             nn.Linear(hidden_size, hidden_size // 2),
@@ -47,21 +47,22 @@ video_num = 0
 
 # ========== Main Inference ==========
 if __name__ == "__main__":
-    kp_model = YOLO("C:/wajahat/hand_in_pocket/bestv7-2.pt", verbose=False)
+    kp_model = YOLO("C:/wajahat/hand_in_pocket/bestv8-1.pt", verbose=False)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    mlp_model_name = "mlp_temp_norm_regrouped_pos_gen_augmented_round-c0"
+    mlp_model_name = "mlp_temp_regrouped_pos_gen_round-c0-moiz-t3"
     mlp_model = load_mlp_model(f"rf_models/{mlp_model_name}.pt", device)
 
-    input_dir = "C:/wajahat/hand_in_pocket/test_bench"
+    # input_dir = "C:/wajahat/hand_in_pocket/test_bench"
+    input_dir = "F:/Wajahat/qiyas_analysis/aug_10/Hands In Pocket/TP"
     json_path = "qiyas_multicam.camera_final.json"
-    WINDOW_SIZE = 5
-    waitkey = 0
-    SKIP_RATE = 2
-    ALERT_THRESHOLD = 6
+    WINDOW_SIZE = 3
+    waitkey = 2
+    SKIP_RATE = 1
+    ALERT_THRESHOLD = 5
     frame_idx = 0
     prediction_streak = {}
 
-    video_files = [f for f in os.listdir(input_dir) if f.endswith('.mp4')]
+    video_files = [f for f in os.listdir(input_dir) if f.endswith('.mp4') or f.endswith('.avi')]
     if not video_files:
         print("No videos found.")
         exit()
@@ -120,9 +121,9 @@ if __name__ == "__main__":
                 continue
 
             frame = cv2.resize(frame, (1280, 720))
-            results = kp_model(frame)
+            results = kp_model(frame, verbose=False)
             current_detected = set()
-
+            waitkey = 1
             for result in results:
                 if not hasattr(result, 'keypoints') or result.keypoints is None:
                     continue
@@ -136,10 +137,11 @@ if __name__ == "__main__":
                     # print(f"kp tensor: {kp_tensor}")
 
                     for i, keypoint in enumerate(kp_tensor):
+                        waitkey = 30
                         x, y, conf = keypoint[:3].cpu().numpy()
                         x = x.astype(int)
                         y = y.astype(int)
-                        print(f"frame: {frame_number}, x: {x}, y: {y}, conf: {conf}")
+                        # print(f"frame: {frame_number}, x: {x}, y: {y}, conf: {conf}")
                         if conf > 0.5:
                             cv2.circle(frame, (int(x), int(y)), 5, (0, 255, 0), -1)
 
@@ -206,16 +208,23 @@ if __name__ == "__main__":
 
                         current_detected.add(streak_key)
                         if prediction == 1:
+                            # print(f"hand in pocket")
                             prediction_streak[streak_key] = prediction_streak.get(streak_key, 0) + 1
                         else:
                             prediction_streak[streak_key] = 0
 
+                        # waitkey = 0 if prediction == 1 else 1
+
                         if prediction_streak.get(streak_key, 0) >= ALERT_THRESHOLD:
-                            alert_label = f"ALERT: {desk_id} - Person {person_idx}"
+                            # alert_label = f"ALERT: {desk_id} - Person {person_idx}"
+                            alert_label = f"ALERT: {desk_id} - Hand in Pocket"
                             cv2.putText(frame, alert_label, (int(person_x), 150 + person_idx * 30),
                                         cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+                            print("************ALERT**************")
 
                         label = "Hand in Pocket" if prediction else "No Hand in Pocket"
+                        # label = "No Hand in Pocket"
+                        # color = (0, 255, 0)
                         color = (0, 0, 255) if prediction else (0, 255, 0)
                         cv2.putText(frame, f"{label} ({prob:.2f})", (int(person_x), 50 + person_idx * 30),
                                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
@@ -256,6 +265,7 @@ if __name__ == "__main__":
                 break
 
         video_num += 1
+        print(f"video: {video_num}")
         cap.release()
 
         # Save CSV file
