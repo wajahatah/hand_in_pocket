@@ -13,7 +13,8 @@ from ultralytics import YOLO
 # =========================
 # ===== CONFIG / FLAGS ====
 # =========================
-INPUT_DIR = "F:/Wajahat/qiyas_analysis/aug_7/Hands In Pocket/TP"
+# INPUT_DIR = "F:/Wajahat/qiyas_analysis/aug_7/Hands In Pocket/TP"
+INPUT_DIR = "C:/Users/LAMBDA THETA/Downloads/24aug-1h"
 ROI_JSON_PATH = "qiyas_multicam.camera_final.json"
 YOLO_WEIGHTS = "bestv8-1.pt"
 MLP_NAME = "mlp_temp_regrouped_pos_gen_ROI_norm-c0"  # weights in rf_models/{MLP_NAME}.pt

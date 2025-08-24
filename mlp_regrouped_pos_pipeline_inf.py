@@ -49,11 +49,13 @@ video_num = 0
 if __name__ == "__main__":
     kp_model = YOLO("C:/wajahat/hand_in_pocket/bestv8-1.pt", verbose=False)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # mlp_model_name = "mlp_temp_norm_regrouped_pos_gen_augmented_round-c0"
     mlp_model_name = "mlp_temp_regrouped_pos_gen_round-c0-moiz-t3"
     mlp_model = load_mlp_model(f"rf_models/{mlp_model_name}.pt", device)
 
-    # input_dir = "C:/wajahat/hand_in_pocket/test_bench"
-    input_dir = "F:/Wajahat/qiyas_analysis/aug_10/Hands In Pocket/TP"
+    input_dir = "C:/Users/LAMBDA THETA/Downloads/24aug-1h"
+    # input_dir = "F:/Wajahat/qiyas_analysis/aug_5-2/Hands In Pocket/TP"
+    # json_path = "qiyas_multicam_2.camera.json"
     json_path = "qiyas_multicam.camera_final.json"
     WINDOW_SIZE = 3
     waitkey = 2
@@ -137,7 +139,7 @@ if __name__ == "__main__":
                     # print(f"kp tensor: {kp_tensor}")
 
                     for i, keypoint in enumerate(kp_tensor):
-                        waitkey = 30
+                        waitkey = 100
                         x, y, conf = keypoint[:3].cpu().numpy()
                         x = x.astype(int)
                         y = y.astype(int)
@@ -220,7 +222,7 @@ if __name__ == "__main__":
                             alert_label = f"ALERT: {desk_id} - Hand in Pocket"
                             cv2.putText(frame, alert_label, (int(person_x), 150 + person_idx * 30),
                                         cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
-                            print("************ALERT**************")
+                            print(f"************ALERT - Desk:{desk_id}**************")
 
                         label = "Hand in Pocket" if prediction else "No Hand in Pocket"
                         # label = "No Hand in Pocket"
