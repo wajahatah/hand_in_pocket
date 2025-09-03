@@ -46,11 +46,11 @@ def assign_roi_index(x):
     return -1
 
 if __name__ == "__main__":
-    model = YOLO("C:/wajahat/hand_in_pocket/bestv7-2.pt")
-    input_dir = "C:/Users/LAMBDA THETA/Downloads/july_27"
+    model = YOLO("C:/wajahat/hand_in_pocket/bestv8-1.pt")
+    input_dir = "C:/Users/LT/Downloads/room_2_combined/room_2_combined/FN"
     # video_name = "c2_v4"
-    output_dir = "C:/wajahat/hand_in_pocket/dataset/training"
-    json_path = "qiyas_multicam.camera_final.json"
+    output_dir = "C:/wajahat/hand_in_pocket/dataset/training2/fn_hp"
+    json_path = "qiyas_multicam_2.camera.json"
 
     os.makedirs(output_dir, exist_ok=True)
     # frames_dir = os.path.join(output_dir, video_name,"frames")
@@ -93,14 +93,27 @@ if __name__ == "__main__":
             # for cam in camera_config:
             #     print(f"- {cam['_id']}")
 
+        skip_video = False
         while True:
-            camera_id_input = input("Enter camera ID for this video (e.g., camera_1): ")
-            video_num = input("Enter video name:")
+            # camera_id_input = input("Enter camera ID for this video (e.g., camera_1): ")
+            cam_id = input("Enter camera ID: ")
+            if cam_id.lower() == 's':
+                with open(f"{output_dir}/video_skip.csv", "a", newline='') as f:
+                    f.write(f"skipped the video: {video_file} \n")
+                skip_video = True
+                cap.release()
+                cv2.destroyWindow("Select Camera View")
+                break
+            camera_id_input = cam_id
+            video_num = input("Enter video num:")
             camera_id = f"camera_{camera_id_input}"
             camera_data = next((cam for cam in camera_config if cam["_id"] == camera_id), None)
             if camera_data:
                 break
             print(f"Invalid camera ID: {camera_id}. Please try again.")
+
+        if skip_video:
+            continue
 
         cv2.destroyWindow("Select Camera View")
 
@@ -136,7 +149,7 @@ if __name__ == "__main__":
             frame = cv2.resize(frame, (1280, 720))
             save_frame = frame.copy()
             # frame_count += 1
-            results = model(frame)
+            results = model(frame, verbose=False)
             person_info_list = []
             frame_dir_TP = os.path.join(output_dir, video_name, "TP")
             frame_dir_FN = os.path.join(output_dir, video_name, "FN")
@@ -156,15 +169,20 @@ if __name__ == "__main__":
 
                         for kp_idx, kp in enumerate(person_keypoints):
                             x, y, conf = kp[0].item(), kp[1].item(), kp[2].item()
+                            if conf < 0.5:
+                                x, y = 0, 0
                             keypoint_list.append((x, y, conf))
                             row_data[f"kp_{kp_idx}_x"] = x
                             row_data[f"kp_{kp_idx}_y"] = y
                             row_data[f"kp_{kp_idx}_conf"] = conf
-                            cv2.circle(frame, (int(x), int(y)), 5, (0, 255, 0), -1)
+                            if conf > 0.5:
+                                cv2.circle(frame, (int(x), int(y)), 5, (0, 255, 0), -1)
 
-                        draw_lines(frame, keypoint_list, connections)
+                                draw_lines(frame, keypoint_list, connections)
 
-                        
+                        if not keypoint_list:
+                            continue
+
                         roi_x = keypoint_list[0][0]
                         roi_idx = assign_roi_index(roi_x)
                         roi_data = roi_lookup.get(roi_idx)
