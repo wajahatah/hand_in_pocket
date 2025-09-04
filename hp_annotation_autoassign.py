@@ -4,6 +4,7 @@ import cv2
 import numpy as np
 import csv
 import json
+import shutil
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
@@ -43,10 +44,10 @@ def assign_roi_index(x):
     return -1
 
 if __name__ == "__main__":
-    model = YOLO("C:/wajahat/hand_in_pocket/bestv7-2.pt")
-    input_dir = "C:/Users/LT/Downloads/room_2_combined/room_2_combined/FP"
+    model = YOLO("C:/wajahat/hand_in_pocket/bestv8-1.pt")
+    input_dir = "C:/Users/LT/Downloads/fp_video_for_annotation/fp_video_for_annotation"
     # video_name = "c2_v4"
-    output_dir = "C:/wajahat/hand_in_pocket/dataset/training2/fp_hp"
+    output_dir = "C:/wajahat/hand_in_pocket/dataset/training2/moiz_fp_hp"
     json_path = "qiyas_multicam_2.camera.json"
 
     os.makedirs(output_dir, exist_ok=True)
@@ -153,6 +154,8 @@ if __name__ == "__main__":
 
                         for kp_idx, kp in enumerate(person_keypoints):
                             x, y, conf = kp[0].item(), kp[1].item(), kp[2].item()
+                            if conf < 0.5:
+                                x, y = 0, 0
                             keypoint_list.append((x, y, conf))
                             row_data[f"kp_{kp_idx}_x"] = x
                             row_data[f"kp_{kp_idx}_y"] = y
@@ -219,9 +222,9 @@ if __name__ == "__main__":
                 # cv2.imwrite( os.path.join(frames_dir, f"frame_{frame_num}.jpg", frame_to_show))
                 cv2.waitKey(1)
 
-                roi_idx = row_data["desk_no"]
-                position = row_data["position"]
-                prompt = f"Frame {frame_num} | ROI {roi_idx} (Position: {position}): Enter hand_in_pocket (0 or 1) [Default: 0]: "
+                # roi_idx = row_data["desk_no"]
+                # position = row_data["position"]
+                # prompt = f"Frame {frame_num} | ROI {roi_idx} (Position: {position}): Enter hand_in_pocket (0 or 1) [Default: 0]: "
 
                 # ---- CHANGED: auto-assign hand_in_pocket = "0" (no prompt) ----
                 hand_in_pocket = "0"
@@ -229,15 +232,15 @@ if __name__ == "__main__":
                 row_data["hand_in_pocket"] = hand_in_pocket
                 csv_writer.writerow(row_data)
         
-        for frame_num, (_, person_list) in enumerate(all_frames_data):
-            frame_name = f"frame_{frame_num:04d}.jpg"
-            frame_copy = all_frames_data[frame_num][0]
-            frame_has_tp = any(str(p["hand_in_pocket"]) == "1" for p in person_list)
+        # for frame_num, (_, person_list) in enumerate(all_frames_data):
+        #     frame_name = f"frame_{frame_num:04d}.jpg"
+        #     frame_copy = all_frames_data[frame_num][0]
+        #     frame_has_tp = any(str(p["hand_in_pocket"]) == "1" for p in person_list)
 
-            if frame_has_tp:
-                cv2.imwrite(os.path.join(frame_dir_TP, frame_name), frame_copy)
-            else:
-                cv2.imwrite(os.path.join(frame_dir_FN, frame_name), frame_copy)
+        #     if frame_has_tp:
+        #         cv2.imwrite(os.path.join(frame_dir_TP, frame_name), frame_copy)
+        #     else:
+        #         cv2.imwrite(os.path.join(frame_dir_FN, frame_name), frame_copy)
                 # frame_has_tp = any(row("hand_in_pocket") == "1" for row in current_frame_data)
                 # if hand_in_pocket == "1":
                 #     cv2.imwrite(os.path.join(frame_dir_TP, f"frame_{frame_num:04d}.jpg"), save_frame)
@@ -247,6 +250,32 @@ if __name__ == "__main__":
                 #         cv2.imwrite(os.path.join(frame_dir_FN, f"frame_{frame_num:04d}.jpg"), save_frame)
 
         print(f"Annotation completed and saved {video_name} CSV.")
+
+        new_video_path = os.path.join(input_dir, video_name + ".mp4")
+
+        try:
+            # Ensure the destination name doesn't block us
+            if os.path.exists(new_video_path):
+                os.remove(new_video_path)
+
+            # Copy the processed source video (video_path) to the new name
+            shutil.copy2(video_path, new_video_path)
+            print(f"Copied processed video to: {new_video_path}")
+
+            # Optional quick sanity check: same size after copy
+            try:
+                if os.path.getsize(video_path) != os.path.getsize(new_video_path):
+                    print("⚠️ Warning: copied file size differs from source.")
+            except Exception:
+                pass
+
+            # Now delete the original file
+            if os.path.exists(video_path):
+                os.remove(video_path)
+                print(f"Deleted original video: {video_path}")
+
+        except Exception as e:
+            print(f"Video copy/overwrite/delete failed: {e}")
 
     csv_file.close()
     cv2.destroyAllWindows()
