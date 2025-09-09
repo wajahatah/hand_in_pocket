@@ -112,6 +112,16 @@ for idx, row in df.iterrows():
 if processed_rows:
     new_df = pd.DataFrame(processed_rows)
 
+    new_df["camera"] = new_df["source_file"].str.extract(r'^(c\d+)_')
+    new_df["video"] = new_df["source_file"].str.extract(r'_(v\d+)')
+
+    # Drop source_file
+    if "source_file" in new_df.columns:
+        new_df = new_df.drop(columns=["source_file"])
+
+    col_order = ["camera", "video"] + [c for c in new_df.columns if c not in ["camera", "video"]]
+    new_df = new_df[col_order]
+
     # Reorder: insert position_a-d before hand_in_pocket
     if 'hand_in_pocket' in new_df.columns:
         cols = list(new_df.columns)
