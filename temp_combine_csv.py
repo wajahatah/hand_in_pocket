@@ -70,6 +70,10 @@ for file in csv_files:
 
             position_val = window[special_column].iloc[0] if special_column in window.columns else None
 
+            labels_counts = window[target_column].value_counts()
+            # label = 1 if labels_counts.get(1,0) >= 1 else 0  # for the logic if there is 1 in the window, leabel is 1
+            one_count = labels_counts.get(1,0)  # for new regresion logic
+            label = one_count / window_size
 
             all_temporal_rows.append([file_name, frame_val, desk_val] + feature.tolist() + [position_val, label])
 
