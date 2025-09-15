@@ -7,6 +7,7 @@ import cv2
 import numpy as np
 import csv
 import json
+import sys
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
@@ -140,6 +141,7 @@ if __name__ == "__main__":
 
         all_frames_data = []
         frame_count = 0
+        processed_videos= []
 
         while cap.isOpened():
             ret, frame = cap.read()
@@ -210,39 +212,39 @@ if __name__ == "__main__":
                         row["person_idx"] = new_idx
                         person_info_list.append(row)
 
-                    """
-                    for person_id, person_keypoints in enumerate(keypoints_data):
-                        keypoint_list = []
-                        row_data = {"frame": frame_count, "person_idx": person_id}
+    #                 """
+    #                 for person_id, person_keypoints in enumerate(keypoints_data):
+    #                     keypoint_list = []
+    #                     row_data = {"frame": frame_count, "person_idx": person_id}
 
-                        for kp_idx, kp in enumerate(person_keypoints):
-                            x, y, conf = kp[0].item(), kp[1].item(), kp[2].item()
-                            keypoint_list.append((x, y, conf))
-                            row_data[f"kp_{kp_idx}_x"] = x
-                            row_data[f"kp_{kp_idx}_y"] = y
-                            row_data[f"kp_{kp_idx}_conf"] = conf
-                            cv2.circle(frame, (int(x), int(y)), 5, (0, 255, 0), -1)
+    #                     for kp_idx, kp in enumerate(person_keypoints):
+    #                         x, y, conf = kp[0].item(), kp[1].item(), kp[2].item()
+    #                         keypoint_list.append((x, y, conf))
+    #                         row_data[f"kp_{kp_idx}_x"] = x
+    #                         row_data[f"kp_{kp_idx}_y"] = y
+    #                         row_data[f"kp_{kp_idx}_conf"] = conf
+    #                         cv2.circle(frame, (int(x), int(y)), 5, (0, 255, 0), -1)
 
-                        draw_lines(frame, keypoint_list, connections)
+    #                     draw_lines(frame, keypoint_list, connections)
 
-                        roi_x = keypoint_list[0][0]
-                        roi_idx = assign_roi_index(roi_x)
-                        roi_data = roi_lookup.get(roi_idx)
+    #                     roi_x = keypoint_list[0][0]
+    #                     roi_idx = assign_roi_index(roi_x)
+    #                     roi_data = roi_lookup.get(roi_idx)
 
-                        if roi_data is None:
-                            print(f"⚠️ No ROI config for roi_idx {roi_idx}, skipping.")
-                            continue
+    #                     if roi_data is None:
+    #                         print(f"⚠️ No ROI config for roi_idx {roi_idx}, skipping.")
+    #                         continue
 
-                        row_data["roi_idx"] = roi_idx
-                        row_data["position"] = roi_data["position"]
-                        row_data["xmin"] = roi_data["xmin"]
-                        row_data["xmax"] = roi_data["xmax"]
+    #                     row_data["roi_idx"] = roi_idx
+    #                     row_data["position"] = roi_data["position"]
+    #                     row_data["xmin"] = roi_data["xmin"]
+    #                     row_data["xmax"] = roi_data["xmax"]
 
-                        dist_dict = calculate_distances(keypoint_list, connections)
-                        row_data.update(dist_dict)
+    #                     dist_dict = calculate_distances(keypoint_list, connections)
+    #                     row_data.update(dist_dict)
 
-                        person_info_list.append(row_data)
-    """
+    #                     person_info_list.append(row_data)
+    # """
             all_frames_data.append((frame.copy(), person_info_list))
             # all_frames_data.roi((frame.copy(), person_info_list))
             frame_count += 1
@@ -254,8 +256,10 @@ if __name__ == "__main__":
         print(max_persons)
 
         frame_hand_labels = {}
+        auto_labels = {}
         for person_idx in range(max_persons):
         # for roi_idx in range(max_persons):
+            # roi_idx = row_data["desk_no"]
             print(f"\n\u25ba Now annotating for Person #{roi_idx} of video {video_name}across all frames.")
 
             # saved_TP_frames = set()
@@ -275,12 +279,70 @@ if __name__ == "__main__":
                 position = row_data["position"]
                 prompt = f"Frame {frame_num} | ROI {roi_idx} (Position: {position}): Enter hand_in_pocket (0 or 1) [Default: 0]: "
 
-                while True:
-                    hand_in_pocket = input(prompt).strip()
-                    if hand_in_pocket in ["", "0", "1"]:
-                        hand_in_pocket = hand_in_pocket or "0"
-                        break
-                    print("❌ Invalid input. Please enter 0 or 1 or press Enter for default 0.")
+                if roi_idx in auto_labels:
+                    hand_in_pocket = auto_labels[roi_idx]
+                    print(f"Auto label applird: ROI {roi_idx} -> {hand_in_pocket}")
+                
+                else:
+                    while True:
+                        hand_in_pocket = input(prompt).strip()
+                        ### ADDED: Backward navigation keys
+                        if hand_in_pocket.lower() == "f":
+                            prev_frame = max(0, frame_num - 1)
+                            print(f"🔄 Going back to previous frame {prev_frame} for same person.")
+                            frame_num = prev_frame - 1
+                            break
+
+                        elif hand_in_pocket.lower() == "d":
+                            desk_frames = [i for i,(fr,pers) in enumerate(all_frames_data) 
+                                        if person_idx < len(pers) and pers[person_idx]["desk_no"]==roi_idx]
+                            if desk_frames:
+                                frame_num = desk_frames[0] - 1
+                                print(f"🔄 Going back to first frame of desk {roi_idx} → Frame {desk_frames[0]}")
+                            break
+
+                        elif hand_in_pocket.lower() == "b":
+                            print("🔄 Restarting current video annotation. CSV will be overwritten...")
+                            csv_file.close()
+                            os.remove(csv_filename)
+                            cap.release()
+                            cv2.destroyAllWindows()
+                            os.execv(sys.executable, ['python'] + sys.argv)
+                            break
+
+                        elif hand_in_pocket.lower() == "v":
+                            if processed_videos:
+                                last_video = processed_videos[-1]
+                                print(f"🔄 Returning to previous video: {last_video}. CSV will be overwritten...")
+                                prev_csv = os.path.join(output_dir, last_video + ".csv")
+                                if os.path.exists(prev_csv):
+                                    os.remove(prev_csv)
+                                cap.release()
+                                cv2.destroyAllWindows()
+                                os.execv(sys.executable, ['python'] + sys.argv)
+                            else:
+                                print("⚠ No previous video available to return to.")
+                            break
+                        ### END ADDED
+                        if hand_in_pocket.lower() == "a":
+                            value = input(f"Enter value for ROI {roi_idx} (0 or 1): ").strip()
+                            if value not in ["0", "1"]:
+                                print("❌ Invalid value. Please enter 0 or 1.")
+                                continue
+                        # if hand_in_pocket in ["", "0", "1"]:
+                            auto_labels[roi_idx] = value
+                            hand_in_pocket = value
+                            print(f"Auto label set: ROI {roi_idx} -> {hand_in_pocket}")
+                            break
+
+                        elif hand_in_pocket in ["","0","1"]:
+                            hand_in_pocket = hand_in_pocket or "0"
+                            break
+
+                        else:
+                        #     hand_in_pocket = hand_in_pocket or "0"
+                        #     break
+                            print("❌ Invalid input. Please enter 0 or 1 or press Enter for default 0.")
 
                 row_data["hand_in_pocket"] = hand_in_pocket
                 csv_writer.writerow(row_data)
@@ -303,6 +365,7 @@ if __name__ == "__main__":
                 #         cv2.imwrite(os.path.join(frame_dir_FN, f"frame_{frame_num:04d}.jpg"), save_frame)
 
         print(f"Annotation completed and saved {video_name} CSV.")
+        processed_videos.append(video_name)
 
     csv_file.close()
     cv2.destroyAllWindows()
