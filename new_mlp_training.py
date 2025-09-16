@@ -18,7 +18,7 @@ label_column = 'hand_in_pocket'
 
 # -------- Load Dataset --------
 df = pd.read_csv("C:/wajahat/hand_in_pocket/dataset/training2/new_combined_temp_balanced_norm.csv")
-df = df.drop(columns=['camera', 'video', 'frame', 'desk_no',
+df = df.drop(columns=['camera', 'video', 'frame', #'desk_no',
                       'kp_0_x_t1', 'kp_0_x_t3', 'kp_0_y_t1', 'kp_0_y_t3',
                         'kp_1_x_t1', 'kp_1_x_t3', 'kp_1_y_t1', 'kp_1_y_t3',
                         'kp_2_x_t1', 'kp_2_x_t3', 'kp_2_y_t1', 'kp_2_y_t3',
@@ -37,6 +37,9 @@ df.fillna(-1, inplace=True)
 X = df.drop(columns=[label_column]).values.astype(np.float32)
 y = df[label_column].values.astype(np.float32)
 
+unique_vals = np.unique(y)
+print("Unique labels in dataset:", unique_vals)
+
 X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
 train_dataset = TensorDataset(torch.tensor(X_train), torch.tensor(y_train))
 val_dataset = TensorDataset(torch.tensor(X_val), torch.tensor(y_val))
@@ -44,6 +47,7 @@ train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE)
 
 # -------- MLP Model --------
+# Classifier
 class MLP(nn.Module):
     def __init__(self, input_size):
         super(MLP, self).__init__()
@@ -62,10 +66,30 @@ class MLP(nn.Module):
 
 model = MLP(INPUT_SIZE)
 
+#Regression
+# class MLPRegression(nn.Module):
+#     def __init__(self, input_size):
+#         super(MLPRegression, self).__init__()
+#         self.net = nn.Sequential(
+#             nn.Linear(input_size, 64),
+#             nn.ReLU(),
+#             nn.Dropout(0.3),
+#             nn.Linear(64, 32),
+#             nn.ReLU(),
+#             nn.Dropout(0.3),
+#             nn.Linear(32, 1)
+#         )
+
+#     def forward(self, x):
+#         return self.net(x)
+
+# model = MLPRegression(INPUT_SIZE)
+
 # -------- Training Setup --------
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = model.to(device)
-criterion = nn.BCEWithLogitsLoss()
+criterion = nn.BCEWithLogitsLoss() # classificiation loss funvtion
+# criterion = nn.MSELoss() # regression loss function
 optimizer = optim.AdamW(model.parameters(), lr=0.001, weight_decay=1e-4)
 scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=10)
 
