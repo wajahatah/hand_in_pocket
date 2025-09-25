@@ -37,7 +37,9 @@ def assign_roi_index(x):
 # ========== Load Model ==========
 def load_mlp_model(weights_path, device):
     model = MLP()
-    model.load_state_dict(torch.load(weights_path, map_location=device))
+    # model.load_state_dict(torch.load(weights_path, map_location=device)) # for without schedular trained models
+    checkpoint = torch.load(weights_path)  # map_location ensures compatibility with CPU/GPU
+    model.load_state_dict(checkpoint['model_state_dict'] if 'model_state_dict' in checkpoint else checkpoint)
     model.to(device)
     model.eval()
     return model
