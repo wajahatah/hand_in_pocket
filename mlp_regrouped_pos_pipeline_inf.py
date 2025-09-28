@@ -15,7 +15,7 @@ class MLP(nn.Module):
     def __init__(self, input_size=104, hidden_size=64):
         super(MLP, self).__init__()
         self.net = nn.Sequential(
-            nn.Linear(84, hidden_size),
+            nn.Linear(64, hidden_size),
             nn.ReLU(),
             nn.Dropout(0.3),
             nn.Linear(hidden_size, hidden_size // 2),
@@ -72,19 +72,21 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     # mlp_model_name = "mlp_temp_norm_regrouped_pos_gen_augmented_round-c0"
     # mlp_model_name = "mlp_temp_regrouped_pos_gen_round-c0-moiz-t3"
-    mlp_model_name = "mlp_temp_balanced_norm-wajahat-t4-c0"
+    mlp_model_name = "mlp_temp_balanced_norm-wajahat-t3-c0"
     mlp_model = load_mlp_model(f"rf_models/{mlp_model_name}.pt", device)
 
-    input_dir = "C:/wajahat/hand_in_pocket/new_testbench/"#"C:/Users/LT/Downloads/videos"
+    input_dir = "C:/Users/LT/Downloads/cam5-21sep/New folder"
     # input_dir = "F:/Wajahat/qiyas_analysis/aug_5-2/Hands In Pocket/TP"
     # json_path = "qiyas_multicam_2.camera.json"
     json_path = "qiyas_multicam.camera_final.json"
-    WINDOW_SIZE = 4
+    WINDOW_SIZE = 3
     waitkey = 2
     SKIP_RATE = 2
     ALERT_THRESHOLD = 5
     frame_idx = 0
     prediction_streak = {}
+    camera_id = "camera_5"
+    user_input = False
 
     video_files = [f for f in os.listdir(input_dir) if f.endswith('.mp4') or f.endswith('.avi')]
     if not video_files:
@@ -110,14 +112,19 @@ if __name__ == "__main__":
             camera_config = json.load(f)
 
         skip_video = False
+        user_input = False
         while True:
-            cam_id = input("Enter camera ID: ")
-            if cam_id.lower() == 's':
-                skip_video = True
-                cap.release()
-                cv2.destroyWindow("Select Camera")
-                break
-            cam_key = f"camera_{cam_id}"
+            if user_input == True:
+                cam_id = input("Enter camera ID: ")
+                if cam_id.lower() == 's':
+                    skip_video = True
+                    cap.release()
+                    cv2.destroyWindow("Select Camera")
+                    break
+                cam_key = f"camera_{cam_id}"
+            else:
+                cam_key = camera_id
+                user = input("Press Enter")
             camera_data = next((cam for cam in camera_config if cam["_id"] == cam_key), None)
             if camera_data:
                 break
@@ -161,7 +168,7 @@ if __name__ == "__main__":
                     # print(f"kp tensor: {kp_tensor}")
 
                     for i, keypoint in enumerate(kp_tensor):
-                        waitkey = 100
+                        # waitkey = 100
                         x, y, conf = keypoint[:3].cpu().numpy()
                         x = x.astype(int)
                         y = y.astype(int)
@@ -245,6 +252,8 @@ if __name__ == "__main__":
                             cv2.putText(frame, alert_label, (int(person_x), 150 + person_idx * 30),
                                         cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
                             print(f"************ALERT - Desk:{desk_id}**************")
+                            waitkey = 60
+                        waitkey = 1
 
                         label = "Hand in Pocket" if prediction else "No Hand in Pocket"
                         # label = "No Hand in Pocket"
