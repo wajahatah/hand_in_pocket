@@ -8,6 +8,7 @@ import numpy as np
 import csv
 import json
 import sys
+import shutil
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
@@ -25,20 +26,20 @@ def draw_lines(frame, keypoints, connections):
             if conf1 > 0.5 and conf2 > 0.5:
                 cv2.line(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 255), 2)
 
-def calculate_distances(keypoint_list, connections, conf_th=0.5):
-    distances = {}
-    for (i, j) in connections:
-        if i < len(keypoint_list) and j < len(keypoint_list):
-            x1, y1, conf1 = keypoint_list[i]
-            x2, y2, conf2 = keypoint_list[j]
-            if conf1 > conf_th and conf2 > conf_th:
-                dist = np.linalg.norm(np.array([x2, y2]) - np.array([x1, y1]))
-            else:
-                dist = float(0)
-            distances[f"distance({i},{j})"] = dist
-        else:
-            distances[f"distance({i},{j})"] = 0.0
-    return distances
+# def calculate_distances(keypoint_list, connections, conf_th=0.5):
+#     distances = {}
+#     for (i, j) in connections:
+#         if i < len(keypoint_list) and j < len(keypoint_list):
+#             x1, y1, conf1 = keypoint_list[i]
+#             x2, y2, conf2 = keypoint_list[j]
+#             if conf1 > conf_th and conf2 > conf_th:
+#                 dist = np.linalg.norm(np.array([x2, y2]) - np.array([x1, y1]))
+#             else:
+#                 dist = float(0)
+#             distances[f"distance({i},{j})"] = dist
+#         else:
+#             distances[f"distance({i},{j})"] = 0.0
+#     return distances
 
 def assign_roi_index(x):
     for roi in roi_data_list:
@@ -48,10 +49,11 @@ def assign_roi_index(x):
 
 if __name__ == "__main__":
     model = YOLO("C:/wajahat/hand_in_pocket/bestv8-1.pt")
-    input_dir = "C:/Users/LT/Downloads/room_2_combined/room_2_combined/FN"
+    input_dir = "C:/Users/LT/Downloads/TP/TP"
     # video_name = "c2_v4"
-    output_dir = "C:/wajahat/hand_in_pocket/dataset/training2/fn_hp"
-    json_path = "qiyas_multicam_2.camera.json"
+    output_dir = "C:/wajahat/hand_in_pocket/dataset/training3/tp_s1_w1"
+    json_path = "qiyas_multicam.camera_final.json"
+    # json_path = "qiyas_multicam_2.camera.json"
 
     os.makedirs(output_dir, exist_ok=True)
     # frames_dir = os.path.join(output_dir, video_name,"frames")
@@ -131,9 +133,10 @@ if __name__ == "__main__":
         csv_filename = os.path.join(output_dir, video_name + ".csv")
 
         keypoint_headers = [f"kp_{i}_x" for i in range(10)] + [f"kp_{i}_y" for i in range(10)] + [f"kp_{i}_conf" for i in range(10)]
-        distance_headers = [f"distance({i},{j})" for (i, j) in connections]
+        # distance_headers = [f"distance({i},{j})" for (i, j) in connections]
         # headers = ["frame", "person_idx", "position", "roi_idx", "xmin", "xmax"] + keypoint_headers + distance_headers + ["hand_in_pocket"]
-        headers = ["frame", "person_idx", "position", "desk_no"] + keypoint_headers + distance_headers + ["hand_in_pocket"]
+        # headers = ["frame", "person_idx", "position", "desk_no"] + keypoint_headers + distance_headers + ["hand_in_pocket"]
+        headers = ["frame", "person_idx", "position", "desk_no"] + keypoint_headers + ["hand_in_pocket"]
 
         csv_file = open(csv_filename, "w", newline="")
         csv_writer = csv.DictWriter(csv_file, fieldnames=headers)
@@ -153,10 +156,10 @@ if __name__ == "__main__":
             # frame_count += 1
             results = model(frame, verbose=False)
             person_info_list = []
-            frame_dir_TP = os.path.join(output_dir, video_name, "TP")
-            frame_dir_FN = os.path.join(output_dir, video_name, "FN")
-            os.makedirs(frame_dir_TP, exist_ok=True)
-            os.makedirs(frame_dir_FN, exist_ok=True)
+            # frame_dir_TP = os.path.join(output_dir, video_name, "TP")
+            # frame_dir_FN = os.path.join(output_dir, video_name, "FN")
+            # os.makedirs(frame_dir_TP, exist_ok=True)
+            # os.makedirs(frame_dir_FN, exist_ok=True)
 
             for result in results:
                 keypoints = result.keypoints
@@ -200,8 +203,8 @@ if __name__ == "__main__":
                         # row_data["xmin"] = roi_data["xmin"]
                         # row_data["xmax"] = roi_data["xmax"]
 
-                        dist_dict = calculate_distances(keypoint_list, connections)
-                        row_data.update(dist_dict)
+                        # dist_dict = calculate_distances(keypoint_list, connections)
+                        # row_data.update(dist_dict)
 
                         temp_person_info.append((roi_idx, row_data))
 
@@ -346,16 +349,42 @@ if __name__ == "__main__":
 
                 row_data["hand_in_pocket"] = hand_in_pocket
                 csv_writer.writerow(row_data)
-        
-        for frame_num, (_, person_list) in enumerate(all_frames_data):
-            frame_name = f"frame_{frame_num:04d}.jpg"
-            frame_copy = all_frames_data[frame_num][0]
-            frame_has_tp = any(str(p["hand_in_pocket"]) == "1" for p in person_list)
+            
+        new_video_path = os.path.join(input_dir, video_name + ".mp4")
 
-            if frame_has_tp:
-                cv2.imwrite(os.path.join(frame_dir_TP, frame_name), frame_copy)
-            else:
-                cv2.imwrite(os.path.join(frame_dir_FN, frame_name), frame_copy)
+        try:
+            # Ensure the destination name doesn't block us
+            if os.path.exists(new_video_path):
+                os.remove(new_video_path)
+
+            # Copy the processed source video (video_path) to the new name
+            shutil.copy2(video_path, new_video_path)
+            print(f"Copied processed video to: {new_video_path}")
+
+            # Optional quick sanity check: same size after copy
+            try:
+                if os.path.getsize(video_path) != os.path.getsize(new_video_path):
+                    print("⚠️ Warning: copied file size differs from source.")
+            except Exception:
+                pass
+
+            # Now delete the original file
+            if os.path.exists(video_path):
+                os.remove(video_path)
+                print(f"Deleted original video: {video_path}")
+
+        except Exception as e:
+            print(f"Video copy/overwrite/delete failed: {e}")
+        
+        # for frame_num, (_, person_list) in enumerate(all_frames_data):
+        #     frame_name = f"frame_{frame_num:04d}.jpg"
+        #     frame_copy = all_frames_data[frame_num][0]
+        #     frame_has_tp = any(str(p["hand_in_pocket"]) == "1" for p in person_list)
+
+        #     if frame_has_tp:
+        #         cv2.imwrite(os.path.join(frame_dir_TP, frame_name), frame_copy)
+        #     else:
+        #         cv2.imwrite(os.path.join(frame_dir_FN, frame_name), frame_copy)
                 # frame_has_tp = any(row("hand_in_pocket") == "1" for row in current_frame_data)
                 # if hand_in_pocket == "1":
                 #     cv2.imwrite(os.path.join(frame_dir_TP, f"frame_{frame_num:04d}.jpg"), save_frame)
@@ -364,8 +393,8 @@ if __name__ == "__main__":
                 #     if frame_num not in saved_TP_frames: 
                 #         cv2.imwrite(os.path.join(frame_dir_FN, f"frame_{frame_num:04d}.jpg"), save_frame)
 
-        print(f"Annotation completed and saved {video_name} CSV.")
-        processed_videos.append(video_name)
+        # print(f"Annotation completed and saved {video_name} CSV.")
+        # processed_videos.append(video_name)
 
     csv_file.close()
     cv2.destroyAllWindows()
