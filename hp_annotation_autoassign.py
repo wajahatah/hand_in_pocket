@@ -45,9 +45,10 @@ def assign_roi_index(x):
 
 if __name__ == "__main__":
     model = YOLO("C:/wajahat/hand_in_pocket/bestv8-1.pt")
-    input_dir = "C:/Users/LT/Downloads/fp_video_for_annotation/fp_video_for_annotation"
+    input_dir = "C:/Users/LT/Downloads/fp/fp"
     # video_name = "c2_v4"
-    output_dir = "C:/wajahat/hand_in_pocket/dataset/training2/moiz_fp_hp"
+    output_dir = "C:/wajahat/hand_in_pocket/dataset/training3/fp_s2_w1"
+    # json_path = "qiyas_multicam.camera_final.json"
     json_path = "qiyas_multicam_2.camera.json"
 
     os.makedirs(output_dir, exist_ok=True)
@@ -115,9 +116,9 @@ if __name__ == "__main__":
         csv_filename = os.path.join(output_dir, video_name + ".csv")
 
         keypoint_headers = [f"kp_{i}_x" for i in range(10)] + [f"kp_{i}_y" for i in range(10)] + [f"kp_{i}_conf" for i in range(10)]
-        distance_headers = [f"distance({i},{j})" for (i, j) in connections]
+        # distance_headers = [f"distance({i},{j})" for (i, j) in connections]
         # headers = ["frame", "person_idx", "position", "roi_idx", "xmin", "xmax"] + keypoint_headers + distance_headers + ["hand_in_pocket"]
-        headers = ["frame", "person_idx", "position", "desk_no"] + keypoint_headers + distance_headers + ["hand_in_pocket"]
+        headers = ["frame", "person_idx", "position", "desk_no"] + keypoint_headers + ["hand_in_pocket"]
 
         csv_file = open(csv_filename, "w", newline="")
         csv_writer = csv.DictWriter(csv_file, fieldnames=headers)
@@ -134,12 +135,12 @@ if __name__ == "__main__":
             frame = cv2.resize(frame, (1280, 720))
             save_frame = frame.copy()
             # frame_count += 1
-            results = model(frame)
+            results = model(frame, verbose=False)
             person_info_list = []
-            frame_dir_TP = os.path.join(output_dir, video_name, "TP")
-            frame_dir_FN = os.path.join(output_dir, video_name, "FN")
-            os.makedirs(frame_dir_TP, exist_ok=True)
-            os.makedirs(frame_dir_FN, exist_ok=True)
+            # frame_dir_TP = os.path.join(output_dir, video_name, "TP")
+            # frame_dir_FN = os.path.join(output_dir, video_name, "FN")
+            # os.makedirs(frame_dir_TP, exist_ok=True)
+            # os.makedirs(frame_dir_FN, exist_ok=True)
 
             for result in results:
                 keypoints = result.keypoints
@@ -164,7 +165,9 @@ if __name__ == "__main__":
 
                         draw_lines(frame, keypoint_list, connections)
 
-                        
+                        if not keypoint_list:
+                            continue
+
                         roi_x = keypoint_list[0][0]
                         roi_idx = assign_roi_index(roi_x)
                         roi_data = roi_lookup.get(roi_idx)
@@ -180,8 +183,8 @@ if __name__ == "__main__":
                         # row_data["xmin"] = roi_data["xmin"]
                         # row_data["xmax"] = roi_data["xmax"]
 
-                        dist_dict = calculate_distances(keypoint_list, connections)
-                        row_data.update(dist_dict)
+                        # dist_dict = calculate_distances(keypoint_list, connections)
+                        # row_data.update(dist_dict)
 
                         temp_person_info.append((roi_idx, row_data))
 
