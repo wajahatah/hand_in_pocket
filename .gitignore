@@ -17,3 +17,7 @@
 *.zip
 *.pt
 *.lnk
+*.labels
+*.pdf
+*.docx
+*.xsls
