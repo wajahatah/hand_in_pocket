@@ -1,0 +1,18 @@
+path: C:/wajahat/hand_in_pocket/dataset/images_bb/training1 # dataset root dir
+train: images/train # train images (relative to 'path') 4 images
+val: images/val # val images (relative to 'path') 4 images
+test: images/test # test images (optional)
+
+# Classes
+names:
+  0: hand outside desk
+  1: Hand on an arm rest
+  2: Hand in pocket #
+  3: Hand in pocket suspected #
+  4: Hand on desk #
+  5: Pocket #
+  6: Hand on lap
+  7: chair hand rest #
+  8: Hand on head
+  9: hand under desk
+  10: hand on back
