@@ -4,8 +4,8 @@ from tqdm import tqdm
 
 # === CONFIGURATION ===
 # txt_path = "C:/Users/LT/Downloads/original_images_url_project_3964 (1).txt"     # Path to your text file
-txt_folder = "C:/Users/LT/Downloads/original_images_url_project_group_112/media/images"
-output_dir = "C:/wajahat/hand_in_pocket/dataset/images_bb"     # Where to save images
+txt_folder = "C:/Users/LT/Downloads/original_images_url_project_group_113 (1)/media/images"
+output_dir = "C:/wajahat/hand_in_pocket/dataset/images_bb/batch3"     # Where to save images
 timeout_sec = 20                     # Timeout for each request (seconds)
 
 # === CREATE OUTPUT FOLDER ===
