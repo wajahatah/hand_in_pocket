@@ -3,11 +3,14 @@ import json
 import re
 
 # === File paths ===
-input_csv = "C:/wajahat/hand_in_pocket/dataset/split_keypoint/combined/cnn_combine_norm.csv"
-output_dir = 'C:/wajahat/hand_in_pocket/dataset/split_keypoint/combined'
-csv_name = 'cnn_combine_norm_pos_gen.csv'
+csv = "tp_s1_w1"
+# input_csv = f"C:/wajahat/hand_in_pocket/dataset/training2/window4/seq2/{csv}.csv"
+input_csv = f"C:/wajahat/hand_in_pocket/dataset/training3/{csv}_combine.csv"
+output_dir = "C:/wajahat/hand_in_pocket/dataset/training3/"
+csv_name = f'{csv}_pos.csv'
 output_csv = f"{output_dir}/{csv_name}"
 json_file = "C:/wajahat/hand_in_pocket/qiyas_multicam.camera_final.json"
+# json_file = "qiyas_multicam_2.camera.json"
 
 # === Load data ===
 df = pd.read_csv(input_csv)
@@ -80,12 +83,16 @@ for idx, row in df.iterrows():
 
         source_file = row['source_file']
         match = re.search(r'c(\d+)_v\d+', source_file)
+        # print(f"match {match}")
         if not match:
+            # print(f"match not found {match}")
             continue
 
         cam_id = int(match.group(1))
         cam_info = camera_map.get(cam_id)
+        # print("cam_info", cam_info['data'].values())
         if not cam_info:
+            # print(f"cam info not found {cam_id}")
             continue
 
         matched_entry = None
@@ -95,15 +102,18 @@ for idx, row in df.iterrows():
                 break
 
         if not matched_entry or 'position_list' not in matched_entry:
+            # print(f"matched entry not found {matched_entry}")
             continue
 
         position_list = matched_entry['position_list']
         if len(position_list) != 4:
+            # print(f"position list not found {position_list}")
             continue
 
         new_row = row.drop(labels=['position']).to_dict()
         new_row['position_a'], new_row['position_b'], new_row['position_c'], new_row['position_d'] = position_list
         processed_rows.append(new_row)
+        # print("processed_rows: ",processed_rows)
 
     except Exception as e:
         print(f"⚠️ Skipping row {idx} due to error: {e}")
