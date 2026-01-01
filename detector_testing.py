@@ -5,8 +5,8 @@ import random
 # -----------------------------------------------------------
 # CONFIG
 # -----------------------------------------------------------
-MODEL_PATH = "C:/wajahat/hand_in_pocket/detection_models/train/exp_3/weights/best.pt"        # your custom model
-VIDEO_PATH = "C:/wajahat/hand_in_pocket/new_test_bench3/r1_d1_fp1.mp4"      # input video
+MODEL_PATH = "C:/wajahat/hand_in_pocket/detection_models/train/exp_1/weights/best.pt"        # your custom model
+VIDEO_PATH = "C:/wajahat/hand_in_pocket/new_test_bench3/r1_d2_tp1.mp4"      # input video
 # OUTPUT_PATH = "output.mp4"    # output file
 CONF_THRESHOLD = 0.25         # prediction threshold
 # -----------------------------------------------------------

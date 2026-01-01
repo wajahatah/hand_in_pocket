@@ -11,14 +11,14 @@ import os
 INPUT_SIZE = 64
 # HIDDEN_SIZE = 128
 BATCH_SIZE = 32
-EPOCHS = 300
+EPOCHS = 500
 PATIENCE = 25
-model_name = "mlp_temp_balanced_norm-wajahat-t3-c0"
+model_name = "mlp_temp_balanced_norm-wajahat-iteration3-c0"
 label_column = 'hand_in_pocket'
 
 # -------- Load Dataset --------
-df = pd.read_csv("C:/wajahat/hand_in_pocket/dataset/training2/new_combined_temp_balanced_norm.csv")
-df = df.drop(columns=['camera', 'video', 'frame', #'desk_no',
+df = pd.read_csv("C:/wajahat/hand_in_pocket/dataset/training3/itteration3_temp_norm_balanced.csv")
+df = df.drop(columns=['camera', 'video', 'frame', 'desk_no',
                       'kp_0_x_t1', 'kp_0_x_t3', 'kp_0_y_t1', 'kp_0_y_t3',
                         'kp_1_x_t1', 'kp_1_x_t3', 'kp_1_y_t1', 'kp_1_y_t3',
                         'kp_2_x_t1', 'kp_2_x_t3', 'kp_2_y_t1', 'kp_2_y_t3',

@@ -3,8 +3,8 @@ import random
 import shutil
 
 # === CONFIG ===
-parent_dir = "C:/wajahat/hand_in_pocket/dataset/images_bb/batch1"  # path containing your ~50 folders
-output_dir = "C:/wajahat/hand_in_pocket/dataset/images_bb/batch1_split"        # where new split folders will be created
+parent_dir = "C:/wajahat/hand_in_pocket/dataset/images_bb/batch3"  # path containing your ~50 folders
+output_dir = "C:/wajahat/hand_in_pocket/dataset/images_bb/batch3_split"        # where new split folders will be created
 
 train_ratio = 0.7
 val_ratio = 0.2

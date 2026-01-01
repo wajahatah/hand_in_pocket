@@ -2,20 +2,20 @@ import os
 import shutil
 
 # === CONFIG ===
-root_dir = "C:/wajahat/hand_in_pocket/dataset/images_bb/batch1_split/train"  # parent directory containing all subfolders
-output_images = "C:/wajahat/hand_in_pocket/dataset/images_bb/training1/train/images"
-output_labels = "C:/wajahat/hand_in_pocket/dataset/images_bb/training1/train/labels"
+root_dir = "C:/wajahat/hand_in_pocket/dataset/images_bb/batch3_split/test"  # parent directory containing all subfolders
+output_images = "C:/wajahat/hand_in_pocket/dataset/images_bb/training2/images/test"
+output_labels = "C:/wajahat/hand_in_pocket/dataset/images_bb/training2/labels/test"
 
 os.makedirs(output_images, exist_ok=True)
 os.makedirs(output_labels, exist_ok=True)
 
-counter = 0
+counter = 119
 
 # Loop through all subfolders
 for folder in os.listdir(root_dir):
     folder_path = os.path.join(root_dir, folder)
     images_path = os.path.join(folder_path, "images")
-    labels_path = os.path.join(folder_path, "new_labels")
+    labels_path = os.path.join(folder_path, "labels")
 
     if not (os.path.isdir(images_path) and os.path.isdir(labels_path)):
         print(f"Skipping {folder_path}, missing images or labels folder.")

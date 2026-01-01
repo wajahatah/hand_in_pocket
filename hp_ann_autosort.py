@@ -49,11 +49,11 @@ def assign_roi_index(x):
 
 if __name__ == "__main__":
     model = YOLO("C:/wajahat/hand_in_pocket/bestv8-1.pt")
-    input_dir = "C:/Users/LT/Downloads/TP/TP"
+    input_dir = "C:/Users/LT/Downloads/TP_S2/TP_S2"
     # video_name = "c2_v4"
-    output_dir = "C:/wajahat/hand_in_pocket/dataset/training3/tp_s1_w1"
-    json_path = "qiyas_multicam.camera_final.json"
-    # json_path = "qiyas_multicam_2.camera.json"
+    output_dir = "C:/wajahat/hand_in_pocket/dataset/training3/tp_s2_w1"
+    # json_path = "qiyas_multicam.camera_final.json"
+    json_path = "qiyas_multicam_2.camera.json"
 
     os.makedirs(output_dir, exist_ok=True)
     # frames_dir = os.path.join(output_dir, video_name,"frames")

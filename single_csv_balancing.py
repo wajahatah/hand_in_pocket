@@ -4,8 +4,8 @@ from tkinter import Tk, filedialog, Frame
 from pandastable import Table
 
 # Paths
-input_folder = "C:/wajahat/hand_in_pocket/dataset/training2/ali_fp"   # folder containing original csvs
-output_folder = "C:/wajahat/hand_in_pocket/dataset/training2/balanced/fp_hp" # folder to save modified csvs
+input_folder = "C:/wajahat/hand_in_pocket/dataset/split_keypoint"   # folder containing original csvs
+output_folder = "C:/wajahat/hand_in_pocket/dataset/training2/balanced/old_hp" # folder to save modified csvs
 os.makedirs(output_folder, exist_ok=True)
 
 # Get list of CSV files

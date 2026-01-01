@@ -78,7 +78,7 @@ def process_temporal_sequences(image_dict, model, roi_data, output_csv):
                         continue
 
                     for t, img in enumerate(images):
-                        results = model(img)
+                        results = model(img, verbose=False)
                         keypoints_data = results[0].keypoints.data.cpu().numpy()
 
                         for person_kps in keypoints_data:
@@ -138,9 +138,9 @@ def process_temporal_sequences(image_dict, model, roi_data, output_csv):
 
 if __name__ == "__main__":
     model_path = "bestv7-2.pt"
-    image_folder = "C:/wajahat/hand_in_pocket/dataset/without_kp/no_hp"
+    image_folder = "E:/Wajahat/hand_in_pocket/frames/without_kp/no_hp"
     json_path = "qiyas_multicam.camera_final.json"
-    output_csv = "C:/wajahat/hand_in_pocket/dataset/without_kp/no_hp_annotations2.csv"
+    output_csv = "C:/wajahat/hand_in_pocket/dataset/new_dataset/no_hp_annotations.csv"
 
     model = YOLO(model_path)
     roi_data = load_roi_data(json_path)

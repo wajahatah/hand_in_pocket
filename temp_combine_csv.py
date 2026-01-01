@@ -3,11 +3,13 @@ import os
 import glob
 
 # input_folder = "C:/wajahat/hand_in_pocket/dataset/training"
-input_folder = "C:/wajahat/hand_in_pocket/dataset/split_keypoint"
+csv= "tp_s1_w1"
+# input_folder = f"C:/wajahat/hand_in_pocket/dataset/training2/{csv}"
+input_folder = "C:/Users/LT/Downloads/Final_balanced/TP_csv_room1"
 # output_dir = "C:/wajahat/hand_in_pocket/dataset/training/combined"
-output_dir = "C:/wajahat/hand_in_pocket/dataset/split_keypoint/combined"
+output_dir = "C:/wajahat/hand_in_pocket/dataset/training4/"
 os.makedirs(output_dir, exist_ok=True)  # Create output directory if it doesn't exist
-output_file = 'temp_distance_l1_v2.csv'
+output_file = f'{csv}_combine.csv'
 output_file = os.path.join(output_dir, output_file)
 
 window_size = 5  # Size of the rolling window
@@ -71,9 +73,9 @@ for file in csv_files:
             position_val = window[special_column].iloc[0] if special_column in window.columns else None
 
             labels_counts = window[target_column].value_counts()
-            # label = 1 if labels_counts.get(1,0) >= 1 else 0  # for the logic if there is 1 in the window, leabel is 1
-            one_count = labels_counts.get(1,0)  # for new regresion logic
-            label = one_count / window_size
+            label = 1 if labels_counts.get(1,0) >= 1 else 0  # for the logic if there is 1 in the window, leabel is 1
+            # one_count = labels_counts.get(1,0)  # for new regresion logic
+            # label = one_count / window_size
 
             all_temporal_rows.append([file_name, frame_val, desk_val] + feature.tolist() + [position_val, label])
 

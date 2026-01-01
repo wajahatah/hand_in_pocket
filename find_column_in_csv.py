@@ -3,8 +3,8 @@ import os
 import glob
 
 # Path where your CSVs are stored
-input_folder = "C:/wajahat/hand_in_pocket/dataset/training2/balanced/old_hp"
-target_column = "hand_in_pocket"
+input_folder = "C:/wajahat/hand_in_pocket/dataset/training3/missing_s1"
+target_column = "desk_no"
 
 csv_files = glob.glob(os.path.join(input_folder, "*.csv"))
 
