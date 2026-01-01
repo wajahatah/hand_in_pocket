@@ -21,3 +21,6 @@
 *.pdf
 *.docx
 *.xsls
+args.yaml
+*.cache
+*.xlsx
